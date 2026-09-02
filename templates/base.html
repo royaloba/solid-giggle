@@ -1,0 +1,132 @@
+<!-- In templates/base.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stylinsole | Sneakers That Speak</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- HTMX for Cart interactions -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+
+    <!-- Custom Tailwind Configuration & Base Styles -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        // You can add custom brand colors here if you want
+                        brand: '#000000', 
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        .form-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            background-color: #f9fafb;
+            color: #111827;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        .form-input:focus {
+            border-color: #000;
+            box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-white text-gray-900 font-sans" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+
+    <!-- Slide-out Drawer Backdrop & Container -->
+    <div id="cart-drawer-backdrop" 
+         onclick="toggleCartDrawer(false)" 
+         class="fixed inset-0 bg-black/40 z-40 hidden transition-opacity"></div>
+
+    <aside id="cart-drawer" 
+           class="fixed top-0 right-0 z-50 w-full max-w-md h-screen transition-transform transform translate-x-full duration-300 ease-in-out">
+        {% include 'cart/partials/cart_drawer_content.html' %}
+    </aside>
+
+    <script>
+        function toggleCartDrawer(open) {
+            const drawer = document.getElementById('cart-drawer');
+            const backdrop = document.getElementById('cart-drawer-backdrop');
+            if (open) {
+                drawer.classList.remove('translate-x-full');
+                backdrop.classList.remove('hidden');
+            } else {
+                drawer.classList.add('translate-x-full');
+                backdrop.classList.add('hidden');
+            }
+        }
+
+        // Open the drawer automatically whenever an item is added
+        document.body.addEventListener('cartUpdated', function() {
+            toggleCartDrawer(true);
+        });
+    </script>
+    <!-- Navigation Bar -->
+    <nav class="border-b border-gray-200 px-6 py-4 flex justify-between items-center sticky top-0 bg-white z-30">
+        <a href="/" class="text-2xl font-extrabold tracking-tighter">STYLINSOLE</a>
+        
+        <div>
+            <!-- The HTMX Cart Badge -->
+            <button onclick="toggleCartDrawer(true)" class="relative p-2 text-gray-700 hover:text-black">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <span id="cart-badge" 
+                      hx-get="{% url 'cart:badge' %}" 
+                      hx-trigger="cartUpdated from:body" 
+                      hx-swap="outerHTML"
+                      class="absolute top-0 right-0 inline-flex items-center justify-center w-5 h-5 text-xs font-bold leading-none text-white bg-black rounded-full transform translate-x-1/4 -translate-y-1/4">
+                    {{ cart|length }}
+                </span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}
+        {% endblock content %}
+    </main>
+
+    <!-- Slide-out Drawer Backdrop & Container -->
+    <div id="cart-drawer-backdrop" 
+         onclick="toggleCartDrawer(false)" 
+         class="fixed inset-0 bg-black/40 z-40 hidden transition-opacity"></div>
+
+    <aside id="cart-drawer" 
+           class="fixed top-0 right-0 z-50 w-full max-w-md h-screen transition-transform transform translate-x-full duration-300 ease-in-out bg-white shadow-2xl">
+        {% include 'cart/partials/cart_drawer_content.html' %}
+    </aside>
+
+    <script>
+        function toggleCartDrawer(open) {
+            const drawer = document.getElementById('cart-drawer');
+            const backdrop = document.getElementById('cart-drawer-backdrop');
+            if (open) {
+                drawer.classList.remove('translate-x-full');
+                backdrop.classList.remove('hidden');
+            } else {
+                drawer.classList.add('translate-x-full');
+                backdrop.classList.add('hidden');
+            }
+        }
+
+        document.body.addEventListener('cartUpdated', function() {
+            toggleCartDrawer(true);
+        });
+    </script>
+</body>
+</html>

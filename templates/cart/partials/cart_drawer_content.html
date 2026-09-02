@@ -1,0 +1,70 @@
+<!-- templates/cart/partials/cart_drawer_content.html -->
+<div id="cart-drawer-container" class="flex flex-col h-full bg-white shadow-xl">
+    <!-- Header -->
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+        <h2 class="text-lg font-bold text-gray-900">Your Cart ({{ cart|length }})</h2>
+        <button onclick="toggleCartDrawer(false)" class="text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
+    </div>
+
+    <!-- Items List -->
+    <div class="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+        {% if cart %}
+            {% for item in cart %}
+                <div class="flex items-center gap-4 py-3 border-b border-gray-100">
+                    {% if item.image %}
+                        <img src="{{ item.image.image.url }}" alt="{{ item.product.name }}" class="w-16 h-16 object-cover rounded-lg bg-gray-50">
+                    {% else %}
+                        <div class="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center text-xs text-gray-400">No Image</div>
+                    {% endif %}
+                    
+                    <div class="flex-1 min-w-0">
+                        <h3 class="text-sm font-semibold text-gray-800 truncate">{{ item.product.name }}</h3>
+                        <p class="text-xs text-gray-500">Size: EU {{ item.variant.size }}</p>
+                        <p class="text-sm font-bold text-gray-900 mt-1">₦{{ item.price }}</p>
+                    </div>
+
+                    <!-- Quantity Adjuster -->
+                    <div class="flex items-center border border-gray-200 rounded-md">
+                        <button hx-post="{% url 'cart:update' item.variant.id %}"
+                                hx-vals='{"quantity": {{ item.quantity|add:"-1" }}}'
+                                hx-target="#cart-drawer-container"
+                                hx-swap="outerHTML"
+                                class="px-2 py-1 text-gray-600 hover:bg-gray-100">-</button>
+                        <span class="px-2 text-sm font-medium">{{ item.quantity }}</span>
+                        <button hx-post="{% url 'cart:update' item.variant.id %}"
+                                hx-vals='{"quantity": {{ item.quantity|add:"1" }}}'
+                                hx-target="#cart-drawer-container"
+                                hx-swap="outerHTML"
+                                class="px-2 py-1 text-gray-600 hover:bg-gray-100">+</button>
+                    </div>
+
+                    <!-- Remove Button -->
+                    <button hx-post="{% url 'cart:remove' item.variant.id %}"
+                            hx-target="#cart-drawer-container"
+                            hx-swap="outerHTML"
+                            class="text-red-500 hover:text-red-700 text-sm ml-2">
+                        &times;
+                    </button>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="text-center py-12">
+                <p class="text-gray-500">Your cart is currently empty!</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Footer Summary & Checkout -->
+    {% if cart %}
+        <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+            <div class="flex justify-between text-base font-bold text-gray-900 mb-3">
+                <span>Subtotal</span>
+                <span>₦{{ cart.get_total_price }}</span>
+            </div>
+            <p class="text-xs text-gray-500 mb-4">Shipping and discounts calculated at checkout.</p>
+            <a href="/orders/checkout/" class="block w-full py-3 text-center font-bold text-white bg-black rounded-lg hover:bg-gray-800 transition">
+                Proceed to Checkout
+            </a>
+        </div>
+    {% endif %}
+</div>

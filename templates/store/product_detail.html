@@ -1,0 +1,88 @@
+<!-- templates/store/product_detail.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 max-w-6xl">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+        
+        <!-- Left Side: Product Images -->
+        <div class="space-y-4">
+            <!-- Main Image -->
+            <img id="main-image" src="{{ product.images.first.image.url }}" alt="{{ product.name }}" class="w-full h-auto bg-gray-100 rounded-xl">
+            
+            <!-- Thumbnail Gallery -->
+            <div class="flex gap-4 overflow-x-auto">
+                {% for image in product.images.all %}
+                    <img src="{{ image.image.url }}" class="w-20 h-20 object-cover rounded-lg cursor-pointer hover:opacity-75 border-2 border-transparent">
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Right Side: Product Details & Add to Cart -->
+        <div>
+            <!-- Breadcrumbs / Brand -->
+            <span class="text-sm text-gray-500 font-semibold">{{ product.brand.name }}</span>
+            
+            <!-- Product Title & Price -->
+            <h1 class="text-3xl font-extrabold text-gray-900 mt-1 mb-4">{{ product.name }}</h1>
+            
+            <div class="flex items-end gap-3 mb-6">
+                {% if product.discount_price %}
+                    <span class="text-2xl font-bold text-red-600">₦{{ product.discount_price }}</span>
+                    <span class="text-lg text-gray-400 line-through">₦{{ product.base_price }}</span>
+                {% else %}
+                    <span class="text-2xl font-bold text-gray-900">₦{{ product.base_price }}</span>
+                {% endif %}
+            </div>
+
+            <!-- Description -->
+            <div class="prose text-gray-600 mb-8">
+                {{ product.description|linebreaks }}
+            </div>
+
+            <!-- Add to Cart Form (YOUR SNIPPET GOES HERE) -->
+             <!-- Inside store/product_detail.html -->
+                <form hx-post="{% url 'cart:add' selected_variant.id %}"
+                    hx-target="#cart-drawer-container"
+                    hx-swap="outerHTML">
+                    {% csrf_token %}
+                    <input type="hidden" name="quantity" value="1">
+                    <button type="submit" class="w-full py-3 bg-black text-white font-bold rounded-lg hover:bg-gray-800">
+                        Add to Cart
+                    </button>
+                </form>
+                        <!-- Note: We are using a looping approach here if there are multiple sizes -->
+            <div class="mb-6">
+                <h3 class="text-sm font-bold text-gray-900 mb-3">Select Size (EU)</h3>
+                
+                <div class="grid grid-cols-4 gap-3">
+                    {% for variant in product.variants.all %}
+                        <!-- We wrap the add-to-cart button inside the HTMX form for EACH size -->
+                        <form hx-post="{% url 'cart:add' variant.id %}"
+                              hx-target="#cart-drawer-container"
+                              hx-swap="outerHTML" 
+                              class="w-full">
+                            {% csrf_token %}
+                            <input type="hidden" name="quantity" value="1">
+                            
+                            <!-- Size Button -->
+                            <button type="submit" 
+                                    class="w-full py-3 border-2 border-gray-200 rounded-lg font-bold hover:border-black focus:border-black focus:ring-1 focus:ring-black transition {% if variant.stock == 0 %}opacity-50 cursor-not-allowed bg-gray-50 text-gray-400{% endif %}"
+                                    {% if variant.stock == 0 %}disabled{% endif %}>
+                                {{ variant.size }}
+                            </button>
+                        </form>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Delivery Info -->
+            <div class="mt-8 pt-6 border-t border-gray-200 text-sm text-gray-500">
+                <p>🚚 Delivery nationwide via GIG Logistics.</p>
+                <p>💬 Got questions? <a href="https://wa.me/234XXXXXXXXXX" class="text-green-600 font-bold hover:underline">Chat with us on WhatsApp</a></p>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

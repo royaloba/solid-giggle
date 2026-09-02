@@ -1,0 +1,8 @@
+<!-- templates/cart/partials/cart_badge.html -->
+<span id="cart-badge" 
+      hx-get="{% url 'cart:badge' %}" 
+      hx-trigger="cartUpdated from:body" 
+      hx-swap="outerHTML"
+      class="inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-white bg-black rounded-full">
+    {{ cart|length }}
+</span>
