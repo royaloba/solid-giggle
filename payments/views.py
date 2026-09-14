@@ -37,8 +37,18 @@ def initiate_payment_view(request: HttpRequest, order_id: int):
             return render(request, "payments/failed.html", {"message": "Could not initialize payment."})
 
     except Exception as e:
-        logger.exception(f"Error initializing Paystack transaction: {e}")
-        return render(request, "payments/failed.html", {"message": "Payment gateway error. Please try again."})
+        print(f"\n--- PAYSTACK ERROR ---")
+        print(str(e))
+        if hasattr(e, 'response') and e.response is not None:
+            print(e.response.json())
+        print("----------------------\n")
+        # 1. Logs the exact technical error to your VS Code terminal (or server logs in production)
+        logger.error(f"Paystack Init Error for Order {order.reference}: {str(e)}", exc_info=True)
+        
+        # 2. Shows a polite, secure message to the front-end user
+        return render(request, "payments/failed.html", {
+            "message": "Payment Failed. Please try again or contact support."
+        })
 
 
 @require_GET
@@ -58,6 +68,10 @@ def payment_callback_view(request: HttpRequest):
         data = result.get("data", {})
 
         if data.get("status") == "success":
+            # Safeguard to prevent double processing
+            if order.status != 'SUCCESS':
+                order.status = 'SUCCESS'
+                order.save()
             return render(request, "payments/success.html", {"order": order})
         else:
             return render(request, "payments/failed.html", {"order": order})
@@ -143,7 +157,22 @@ def paystack_webhook_view(request: HttpRequest):
     return HttpResponse(status=200)
 
 
+# payments/views.py (Update the _fulfill_order function at the bottom)
+
 def _fulfill_order(order: Order):
-    """Hook for inventory deduction, order confirmation emails, and alerts."""
+    """
+    Hook for inventory deduction and alerts.
+    This runs safely inside the webhook's atomic transaction.
+    """
     logger.info(f"Successfully fulfilled Order {order.reference} for {order.email}")
-    # Example: Deduct ProductVariant.stock, send Celery tasks, etc.
+    
+    # Deduct stock for each purchased item
+    for item in order.items.all():
+        if item.variant:
+            # Prevent negative stock just in case of edge cases
+            if item.variant.stock >= item.quantity:
+                item.variant.stock -= item.quantity
+            else:
+                item.variant.stock = 0 
+            
+            item.variant.save(update_fields=['stock'])

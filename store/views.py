@@ -1,5 +1,21 @@
 from django.shortcuts import render, get_object_or_404
-from .models import Product
+from django.db.models import Q
+from .models import Product, Category, Brand
+
+def home_view(request):
+    categories = Category.objects.all()
+    # Fetch top 4 featured sneakers
+    featured_products = Product.objects.filter(is_featured=True).prefetch_related('images')[:4]
+    
+    # Fetch 8 newest arrivals, excluding the featured ones so we don't show duplicates
+    new_arrivals = Product.objects.exclude(id__in=featured_products).order_by('-created_at').prefetch_related('images')[:8]
+    
+    return render(request, 'store/home.html', {
+        'categories': categories,
+        'featured_products': featured_products,
+        'new_arrivals': new_arrivals,
+    })
+
 
 def product_detail(request, slug):
     # prefetch_related prevents N+1 queries when looping through images and variants in the template
@@ -17,3 +33,51 @@ def product_detail(request, slug):
     }
     
     return render(request, 'store/product_detail.html', context)
+
+def product_list(request):
+    """Handles the main store page, category filtering, searching, and sorting"""
+    products = Product.objects.all().prefetch_related('images')
+    categories = Category.objects.all()
+    brands = Brand.objects.all() # Fetch brands for the filter drawer
+    
+    # Category Filter
+    category_slug = request.GET.get('category')
+    if category_slug:
+        products = products.filter(category__slug=category_slug)
+        
+    # Search Query
+    search_query = request.GET.get('q')
+    if search_query:
+        products = products.filter(
+            Q(name__icontains=search_query) | 
+            Q(brand__name__icontains=search_query)
+        )
+
+    # Brand Filter
+    brand_slug = request.GET.get('brand')
+    if brand_slug:
+        products = products.filter(brand__slug=brand_slug)
+
+    # Price Filter
+    min_price = request.GET.get('min_price')
+    max_price = request.GET.get('max_price')
+    if min_price:
+        products = products.filter(base_price__gte=min_price)
+    if max_price:
+        products = products.filter(base_price__lte=max_price)
+
+    # Sort Order
+    sort_by = request.GET.get('sort')
+    if sort_by == 'price_asc':
+        products = products.order_by('base_price')
+    elif sort_by == 'price_desc':
+        products = products.order_by('-base_price')
+    else:
+        products = products.order_by('-created_at') # Default to Newest
+        
+    return render(request, 'store/store.html', {
+        'products': products.distinct(),
+        'categories': categories,
+        'brands': brands,
+        'current_category': category_slug,
+    })

@@ -1,8 +1,5 @@
-from django.db import models
-
-# Create your models here.
-# orders/models.py
 import uuid
+from django.db import models
 from django.conf import settings
 
 class Order(models.Model):
@@ -11,24 +8,27 @@ class Order(models.Model):
         SUCCESS = 'SUCCESS', 'Success'
         FAILED = 'FAILED', 'Failed'
 
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='orders'
-    )
-    email = models.EmailField()
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='orders')
     reference = models.CharField(max_length=100, unique=True, db_index=True)
+    
+    # Customer & Shipping Details (CRITICAL FIX)
+    first_name = models.CharField(max_length=50)
+    last_name = models.CharField(max_length=50)
+    email = models.EmailField()
+    phone = models.CharField(max_length=20)
+    address = models.TextField()
+    state = models.CharField(max_length=50)
+
+    # Payment Details
     total_amount = models.DecimalField(max_digits=12, decimal_places=2) # in Naira
-    status = models.CharField(
-        max_length=20,
-        choices=PaymentStatus.choices,
-        default=PaymentStatus.PENDING
-    )
+    status = models.CharField(max_length=20, choices=PaymentStatus.choices, default=PaymentStatus.PENDING)
     paystack_transaction_id = models.CharField(max_length=100, blank=True, null=True)
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
 
     def __str__(self):
         return f"Order {self.reference} - ₦{self.total_amount} ({self.status})"
@@ -40,23 +40,14 @@ class Order(models.Model):
 
     @property
     def amount_in_kobo(self) -> int:
-        """Converts Naira Decimal to integer Kobo required by Paystack API."""
         return int(self.total_amount * 100)
-
-# orders/models.py (Add this below your Order model)
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
-    variant = models.ForeignKey(
-        'store.ProductVariant',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='order_items'
-    )
-    product_name = models.CharField(max_length=255)  # Historical snapshot
+    variant = models.ForeignKey('store.ProductVariant', on_delete=models.SET_NULL, null=True, blank=True, related_name='order_items')
+    product_name = models.CharField(max_length=255) 
     size = models.CharField(max_length=10)
-    price = models.DecimalField(max_digits=12, decimal_places=2)  # Price at purchase
+    price = models.DecimalField(max_digits=12, decimal_places=2) 
     quantity = models.PositiveIntegerField(default=1)
 
     def __str__(self):
@@ -64,4 +55,6 @@ class OrderItem(models.Model):
 
     @property
     def total_price(self):
-        return self.price * self.quantity
+        safe_price = self.price or 0
+        safe_quantity = self.quantity or 0
+        return safe_price * safe_quantity

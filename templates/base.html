@@ -1,58 +1,115 @@
-<!-- In templates/base.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    
-<meta charset="UTF-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stylinsole | Sneakers That Speak</title>
-
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- HTMX for Cart interactions -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-
-    <!-- Custom Tailwind Configuration & Base Styles -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        // You can add custom brand colors here if you want
-                        brand: '#000000', 
-                    }
-                }
+    
+    <style type="text/tailwindcss">
+        @layer components {
+            .form-input {
+                width: 100%;
+                padding: 0.75rem 1rem;
+                border: 1px solid #d1d5db;
+                border-radius: 0.5rem;
+                background-color: #f9fafb;
+                color: #111827;
+                outline: none;
+                transition: all 150ms ease;
             }
-        }
-    </script>
-
-    <style>
-        .form-input {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            border: 1px solid #d1d5db;
-            border-radius: 0.5rem;
-            background-color: #f9fafb;
-            color: #111827;
-            outline: none;
-            transition: all 0.3s ease;
-        }
-        .form-input:focus {
-            border-color: #000;
-            box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+            .form-input:focus {
+                border-color: #000;
+                box-shadow: 0 0 0 2px #000;
+            }
         }
     </style>
 </head>
-<body class="bg-white text-gray-900 font-sans" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+<!-- Added pb-20 for mobile bottom nav spacing, bg-gray-50 for the mockup background -->
+<body class="bg-gray-50 text-gray-900 font-sans flex flex-col min-h-screen pb-20 md:pb-0" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+
+    <!-- Top Header (Desktop & Mobile Mixed) -->
+    <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-gray-100 px-4 py-3 flex items-center justify-between shadow-sm">
+        <a href="{% url 'store:home' %}" class="flex items-center gap-2">
+            <h1 class="text-2xl font-extrabold tracking-tighter uppercase">STYLINSOLE</h1>
+        </a>
+        
+        <div class="flex items-center gap-4">
+            <!-- Search Bar (Desktop) -->
+            <form action="{% url 'store:list' %}" method="GET" class="hidden md:block relative">
+                <input type="text" name="q" placeholder="Search shoes, brands..." value="{{ request.GET.q }}" class="bg-gray-100 text-sm rounded-full pl-10 pr-4 py-2 w-64 outline-none focus:ring-2 focus:ring-gray-200">
+                <button type="submit" class="absolute left-4 top-2.5 text-gray-400 hover:text-black">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </button>
+            </form>
+            
+            <!-- Auth Links (Desktop Only - Mobile uses bottom nav) -->
+            <div class="hidden md:flex items-center gap-4 text-sm font-bold text-gray-600 mr-2">
+                {% if user.is_authenticated %}
+                    <span class="text-gray-900">Hi, {{ user.username }}</span>
+                    <a href="{% url 'accounts:logout' %}" class="hover:text-black transition">Logout</a>
+                {% else %}
+                    <a href="{% url 'accounts:login' %}" class="hover:text-black transition">Log In</a>
+                    <a href="{% url 'accounts:register' %}" class="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition">Sign Up</a>
+                {% endif %}
+            </div>
+
+            <!-- HTMX Cart Trigger -->
+            <button onclick="toggleCartDrawer(true)" class="relative p-1 text-gray-900 hover:opacity-70 transition">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                <span id="cart-badge" 
+                      hx-get="{% url 'cart:badge' %}" 
+                      hx-trigger="cartUpdated from:body" 
+                      hx-swap="outerHTML"
+                      class="absolute top-0 right-0 inline-flex items-center justify-center w-4 h-4 text-[10px] font-bold text-white bg-red-600 rounded-full transform translate-x-1/4 -translate-y-1/4">
+                    {{ cart|length }}
+                </span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Mobile Search Bar (Only visible on small screens) -->
+    <div class="md:hidden px-4 py-3 bg-white border-b border-gray-100">
+        <form action="{% url 'store:list' %}" method="GET" class="relative">
+            <input type="text" name="q" placeholder="Search shoes, brands..." value="{{ request.GET.q }}" class="w-full bg-gray-100 text-sm rounded-full pl-10 pr-4 py-2.5 outline-none focus:ring-2 focus:ring-gray-200">
+            <button type="submit" class="absolute left-4 top-2.5 text-gray-400 hover:text-black">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </button>
+        </form>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Mobile Bottom Navigation (From Mockup) -->
+    <nav class="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 flex justify-around items-center py-2 z-30 pb-safe">
+        <a href="{% url 'store:home' %}" class="flex flex-col items-center p-2 text-green-700">
+            <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 101.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg>
+            <span class="text-[10px] font-bold">Home</span>
+        </a>
+        <a href="{% url 'store:list' %}" class="flex flex-col items-center p-2 text-gray-400 hover:text-green-700 transition">
+            <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+            <span class="text-[10px] font-medium">Store</span>
+        </a>
+        <a href="#" class="flex flex-col items-center p-2 text-gray-400 hover:text-green-700 transition">
+            <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+            <span class="text-[10px] font-medium">Wishlist</span>
+        </a>
+        <a href="{% if user.is_authenticated %}{% url 'accounts:logout' %}{% else %}{% url 'accounts:login' %}{% endif %}" class="flex flex-col items-center p-2 text-gray-400 hover:text-green-700 transition">
+            <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+            <span class="text-[10px] font-medium">Account</span>
+        </a>
+    </nav>
 
     <!-- Slide-out Drawer Backdrop & Container -->
-    <div id="cart-drawer-backdrop" 
-         onclick="toggleCartDrawer(false)" 
-         class="fixed inset-0 bg-black/40 z-40 hidden transition-opacity"></div>
+    <div id="cart-drawer-backdrop" onclick="toggleCartDrawer(false)" class="fixed inset-0 bg-black/40 z-50 hidden transition-opacity"></div>
 
-    <aside id="cart-drawer" 
-           class="fixed top-0 right-0 z-50 w-full max-w-md h-screen transition-transform transform translate-x-full duration-300 ease-in-out">
+    <aside id="cart-drawer" class="fixed top-0 right-0 z-[60] w-full max-w-md h-screen transition-transform transform translate-x-full duration-300 ease-in-out bg-white shadow-2xl">
         {% include 'cart/partials/cart_drawer_content.html' %}
     </aside>
 
@@ -70,60 +127,6 @@
         }
 
         // Open the drawer automatically whenever an item is added
-        document.body.addEventListener('cartUpdated', function() {
-            toggleCartDrawer(true);
-        });
-    </script>
-    <!-- Navigation Bar -->
-    <nav class="border-b border-gray-200 px-6 py-4 flex justify-between items-center sticky top-0 bg-white z-30">
-        <a href="/" class="text-2xl font-extrabold tracking-tighter">STYLINSOLE</a>
-        
-        <div>
-            <!-- The HTMX Cart Badge -->
-            <button onclick="toggleCartDrawer(true)" class="relative p-2 text-gray-700 hover:text-black">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-                <span id="cart-badge" 
-                      hx-get="{% url 'cart:badge' %}" 
-                      hx-trigger="cartUpdated from:body" 
-                      hx-swap="outerHTML"
-                      class="absolute top-0 right-0 inline-flex items-center justify-center w-5 h-5 text-xs font-bold leading-none text-white bg-black rounded-full transform translate-x-1/4 -translate-y-1/4">
-                    {{ cart|length }}
-                </span>
-            </button>
-        </div>
-    </nav>
-
-    <!-- Main Content -->
-    <main>
-        {% block content %}
-        {% endblock content %}
-    </main>
-
-    <!-- Slide-out Drawer Backdrop & Container -->
-    <div id="cart-drawer-backdrop" 
-         onclick="toggleCartDrawer(false)" 
-         class="fixed inset-0 bg-black/40 z-40 hidden transition-opacity"></div>
-
-    <aside id="cart-drawer" 
-           class="fixed top-0 right-0 z-50 w-full max-w-md h-screen transition-transform transform translate-x-full duration-300 ease-in-out bg-white shadow-2xl">
-        {% include 'cart/partials/cart_drawer_content.html' %}
-    </aside>
-
-    <script>
-        function toggleCartDrawer(open) {
-            const drawer = document.getElementById('cart-drawer');
-            const backdrop = document.getElementById('cart-drawer-backdrop');
-            if (open) {
-                drawer.classList.remove('translate-x-full');
-                backdrop.classList.remove('hidden');
-            } else {
-                drawer.classList.add('translate-x-full');
-                backdrop.classList.add('hidden');
-            }
-        }
-
         document.body.addEventListener('cartUpdated', function() {
             toggleCartDrawer(true);
         });

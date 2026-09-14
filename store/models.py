@@ -34,6 +34,7 @@ class Product(models.Model):
     base_price = models.DecimalField(max_digits=10, decimal_places=2)  # NGN
     discount_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     is_featured = models.BooleanField(default=False)
+    is_in_stock = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -62,7 +63,7 @@ class ProductVariant(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="variants")
     size = models.CharField(max_length=10)
     sku = models.CharField(max_length=50, unique=True)
-    stock = models.PositiveIntegerField(default=0)
+    
     price_override = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     class Meta:

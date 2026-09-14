@@ -1,4 +1,3 @@
-# cart/urls.py
 from django.urls import path
 from . import views
 
@@ -10,5 +9,4 @@ urlpatterns = [
     path('add/<int:variant_id>/', views.cart_add, name='add'),
     path('update/<int:variant_id>/', views.cart_update, name='update'),
     path('remove/<int:variant_id>/', views.cart_remove, name='remove'),
-    path('add/<int:product_id>/', views.cart_add, name='cart_add'),
 ]

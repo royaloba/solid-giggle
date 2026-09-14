@@ -29,9 +29,7 @@ class Cart:
         else:
             self.cart[variant_id]['quantity'] += quantity
 
-        # Stock check guard
-        if self.cart[variant_id]['quantity'] > variant.stock:
-            self.cart[variant_id]['quantity'] = variant.stock
+        
 
         self.save()
 

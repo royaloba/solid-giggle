@@ -10,6 +10,11 @@ from .cart import Cart
 def cart_add(request, variant_id):
     cart = Cart(request)
     variant = get_object_or_404(ProductVariant, id=variant_id)
+    
+    # 1. NEW: Check your new toggle! If it's sold out, don't add it.
+    if not variant.product.is_in_stock:
+        return render(request, 'cart/partials/cart_drawer_content.html', {'cart': cart})
+
     quantity = int(request.POST.get('quantity', 1))
     
     cart.add(variant=variant, quantity=quantity)

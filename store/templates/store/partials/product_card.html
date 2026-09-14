@@ -1,0 +1,45 @@
+<div class="relative bg-white rounded-xl border border-gray-100 p-3 shadow-sm hover:shadow-md transition-shadow">
+    <!-- Badges & Wishlist -->
+    <div class="absolute top-5 left-5 z-10 flex gap-2">
+        {% if product.discount_price %}
+            <span class="bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-sm">SALE</span>
+        {% elif product.is_featured %}
+            <span class="bg-blue-500 text-white text-[10px] font-bold px-2 py-1 rounded-sm">NEW</span>
+        {% endif %}
+    </div>
+    <button class="absolute top-5 right-5 z-10 text-gray-400 hover:text-red-500 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+    </button>
+
+    <!-- Image -->
+    <a href="{% url 'store:product_detail' product.slug %}" class="block aspect-square bg-gray-50 rounded-lg overflow-hidden mb-3 relative flex items-center justify-center">
+        {% if product.primary_image %}
+            <img src="{{ product.primary_image.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover mix-blend-multiply hover:scale-105 transition-transform duration-500">
+        {% else %}
+            <span class="text-gray-400 text-sm">No Image</span>
+        {% endif %}
+    </a>
+
+    <!-- Details -->
+    <div class="space-y-1">
+        <p class="text-xs text-gray-500 font-medium mt-2">{{ product.brand.name }}</p>
+        <h3 class="text-sm font-bold text-gray-900 truncate hover:underline">
+            <a href="{% url 'store:product_detail' product.slug %}">{{ product.name }}</a>
+        </h3>
+        
+        <div class="flex items-center gap-2 mt-1">
+            {% if product.discount_price %}
+                <span class="text-sm font-extrabold text-gray-900">₦{{ product.discount_price }}</span>
+                <span class="text-[10px] text-gray-400 line-through">₦{{ product.base_price }}</span>
+            {% else %}
+                <span class="text-sm font-extrabold text-gray-900">₦{{ product.base_price }}</span>
+            {% endif %}
+        </div>
+        
+        <!-- Stock Status -->
+        <div class="flex items-center gap-1 mt-2">
+            <span class="w-2 h-2 rounded-full {% if product.is_in_stock %}bg-green-500{% else %}bg-red-500{% endif %}"></span>
+            <span class="text-[10px] text-gray-600 font-medium">{% if product.is_in_stock %}In stock{% else %}Sold out{% endif %}</span>
+        </div>
+    </div>
+</div>

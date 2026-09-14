@@ -1,10 +1,7 @@
-
-
-# Create your views here.
-# orders/views.py
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.db import transaction
+from django.http import Http404
 from cart.cart import Cart
 from .models import Order, OrderItem
 from .forms import CheckoutForm
@@ -12,7 +9,6 @@ from .forms import CheckoutForm
 def checkout_view(request):
     cart = Cart(request)
     
-    # Block checkout if cart is empty
     if len(cart) == 0:
         messages.error(request, "Your cart is empty. Add some sneakers before checking out.")
         return redirect('store:home')
@@ -22,27 +18,20 @@ def checkout_view(request):
         
         if form.is_valid():
             try:
-                # Wrap in atomic block: Either everything saves, or nothing saves.
                 with transaction.atomic():
-                    
-                    # 1. Create the Order
                     order = form.save(commit=False)
                     if request.user.is_authenticated:
                         order.user = request.user
                     
                     order.total_amount = cart.get_total_price()
-                    
-                    # Save shipping data to a JSON field or separate model if you expand later
-                    # For now, we'll store basic order state
-                    order.save()
+                    order.save() # Shipping details are now saved securely!
 
-                    # 2. Move cart items into OrderItems in the database
                     for item in cart:
                         variant = item['variant']
                         
-                        # (Optional) Basic stock check before selling
-                        if variant.stock < item['quantity']:
-                            raise ValueError(f"Sorry, {item['product'].name} in size {variant.size} only has {variant.stock} left.")
+                        # NEW CHECK: Look at the boolean toggle instead of numeric stock
+                        if not variant.product.is_in_stock:
+                            raise ValueError(f"Sorry, {item['product'].name} is currently sold out.")
 
                         OrderItem.objects.create(
                             order=order,
@@ -53,23 +42,16 @@ def checkout_view(request):
                             quantity=item['quantity']
                         )
 
-                    # 3. Clear the session cart because the order is now recorded
                     cart.clear()
-
-                # 4. Handoff to Paystack Initialization View
-                # We redirect to the 'payments:initiate' route we built previously
                 return redirect('payments:initiate', order_id=order.id)
 
             except ValueError as e:
-                # Catch the stock error we raised above
                 messages.error(request, str(e))
-                return redirect('cart:drawer') # Or wherever your full cart page is
+                return redirect('cart:drawer') 
             except Exception as e:
                 messages.error(request, "A system error occurred. Please try again.")
-                # Log the exception here
                 
     else:
-        # Pre-fill form if user is logged in
         initial_data = {}
         if request.user.is_authenticated:
             initial_data = {
@@ -79,7 +61,14 @@ def checkout_view(request):
             }
         form = CheckoutForm(initial=initial_data)
 
-    return render(request, 'orders/checkout.html', {
-        'form': form,
-        'cart': cart
-    })
+    return render(request, 'orders/checkout.html', {'form': form, 'cart': cart})
+
+def receipt_view(request, reference):
+    """Allows users or admins to view and print the order invoice."""
+    order = get_object_or_404(Order, reference=reference)
+    
+    # Security: Ensure only the person who made the order (or an admin) can see the receipt
+    if order.user and request.user != order.user and not request.user.is_staff:
+        raise Http404("Receipt not found.")
+        
+    return render(request, 'orders/receipt.html', {'order': order})
