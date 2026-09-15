@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="container mx-auto px-4 py-12 max-w-md">
-    <div class="bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
-        <h1 class="text-3xl font-extrabold text-gray-900 mb-2 text-center">Create Account</h1>
+    <div class="bg-white p-8 rounded-2xl shadow-xl border border-gray-100 border-t-4 border-t-wine">
+        <h1 class="text-3xl font-extrabold text-gray-900 mb-2 text-center tracking-tight">Create Account</h1>
         <p class="text-gray-500 text-center text-sm mb-6">Join Stylinsole for faster checkout and order tracking.</p>
         
         <form method="POST" class="space-y-4">
@@ -19,13 +19,13 @@
                 </div>
             {% endfor %}
             
-            <button type="submit" class="w-full py-4 bg-black text-white font-bold rounded-lg hover:bg-gray-800 transition mt-4">
+            <button type="submit" class="w-full py-4 bg-wine text-white font-bold rounded-xl hover:bg-[#5a252b] transition-all shadow-md hover:shadow-lg mt-6 text-lg">
                 Create Account
             </button>
         </form>
         
         <p class="text-center text-sm text-gray-500 mt-6">
-            Already have an account? <a href="{% url 'accounts:login' %}" class="text-black font-bold hover:underline">Sign In</a>
+            Already have an account? <a href="{% url 'accounts:login' %}" class="text-wine font-bold hover:text-[#5a252b] hover:underline transition-colors">Sign In</a>
         </p>
     </div>
 </div>

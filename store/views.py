@@ -1,6 +1,8 @@
 from django.shortcuts import render, get_object_or_404
 from django.db.models import Q
-from .models import Product, Category, Brand
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import redirect
+from .models import Product, Category, Brand, Wishlist
 
 def home_view(request):
     categories = Category.objects.all()
@@ -12,12 +14,19 @@ def home_view(request):
     
     # Fetch only brands that have at least one product associated with them
     active_brands = Brand.objects.filter(products__isnull=False).distinct()
+
+    user_wishlist = []
+    if request.user.is_authenticated:
+        from .models import Wishlist
+        # Grabs just the product IDs the user has saved, all in one fast database query
+        user_wishlist = Wishlist.objects.filter(user=request.user).values_list('product_id', flat=True)
     
     return render(request, 'store/home.html', {
         'categories': categories,
         'featured_products': featured_products,
         'new_arrivals': new_arrivals,
         'brands': active_brands,
+        'user_wishlist': user_wishlist,
     })
 
 def product_detail(request, slug):
@@ -34,7 +43,13 @@ def product_detail(request, slug):
         'variants': product.variants.all(), 
         'images': product.images.all(),
     }
+    user_wishlist = []
+    if request.user.is_authenticated:
+        from .models import Wishlist
+        # Grabs just the product IDs the user has saved, all in one fast database query
+        user_wishlist = Wishlist.objects.filter(user=request.user).values_list('product_id', flat=True)
     
+    context['user_wishlist'] = user_wishlist
     return render(request, 'store/product_detail.html', context)
 
 def product_list(request):
@@ -77,6 +92,12 @@ def product_list(request):
         products = products.order_by('-base_price')
     else:
         products = products.order_by('-created_at') # Default to Newest
+
+    user_wishlist = []
+    if request.user.is_authenticated:
+        from .models import Wishlist
+        # Grabs just the product IDs the user has saved, all in one fast database query
+        user_wishlist = Wishlist.objects.filter(user=request.user).values_list('product_id', flat=True)
         
     return render(request, 'store/store.html', {
         'products': products.distinct(),
@@ -84,3 +105,20 @@ def product_list(request):
         'brands': brands,
         'current_category': category_slug,
     })
+
+@login_required
+def toggle_wishlist(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    wishlist_item, created = Wishlist.objects.get_or_create(user=request.user, product=product)
+    
+    if not created:
+        # If it already exists, clicking the heart removes it (toggle behavior)
+        wishlist_item.delete()
+        
+    # Redirect back to wherever the user clicked it from
+    return redirect(request.META.get('HTTP_REFERER', 'store:home'))
+
+@login_required
+def wishlist_view(request):
+    wishlist_items = Wishlist.objects.filter(user=request.user).select_related('product')
+    return render(request, 'store/wishlist.html', {'wishlist_items': wishlist_items})
