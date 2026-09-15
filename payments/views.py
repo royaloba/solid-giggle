@@ -1,4 +1,3 @@
-# payments/views.py
 import hmac
 import hashlib
 import json
@@ -7,6 +6,7 @@ from django.conf import settings
 from django.db import transaction
 from django.http import HttpResponse, JsonResponse, HttpRequest
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse  # <-- Added reverse import
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST, require_GET
 
@@ -22,11 +22,15 @@ def initiate_payment_view(request: HttpRequest, order_id: int):
     paystack = PaystackService()
 
     try:
+        # Dynamically build the callback URL based on the current domain (localhost vs render)
+        # Note: adjust 'payments:callback' if your url name is different in urls.py
+        dynamic_callback_url = request.build_absolute_uri(reverse('payments:callback'))
+
         response = paystack.initialize_transaction(
             email=order.email,
             amount_kobo=order.amount_in_kobo,
             reference=order.reference,
-            callback_url=settings.PAYSTACK_CALLBACK_URL
+            callback_url=dynamic_callback_url  # <-- Updated to dynamic URL
         )
 
         if response.get("status") is True:
@@ -42,10 +46,8 @@ def initiate_payment_view(request: HttpRequest, order_id: int):
         if hasattr(e, 'response') and e.response is not None:
             print(e.response.json())
         print("----------------------\n")
-        # 1. Logs the exact technical error to your VS Code terminal (or server logs in production)
-        logger.error(f"Paystack Init Error for Order {order.reference}: {str(e)}", exc_info=True)
         
-        # 2. Shows a polite, secure message to the front-end user
+        logger.error(f"Paystack Init Error for Order {order.reference}: {str(e)}", exc_info=True)
         return render(request, "payments/failed.html", {
             "message": "Payment Failed. Please try again or contact support."
         })
@@ -60,15 +62,12 @@ def payment_callback_view(request: HttpRequest):
 
     order = get_object_or_404(Order, reference=reference)
 
-    # Note: Rely primarily on the webhook for database mutation;
-    # verify here for immediate UI responsiveness.
     paystack = PaystackService()
     try:
         result = paystack.verify_transaction(reference)
         data = result.get("data", {})
 
         if data.get("status") == "success":
-            # Safeguard to prevent double processing
             if order.status != 'SUCCESS':
                 order.status = 'SUCCESS'
                 order.save()
@@ -93,7 +92,6 @@ def paystack_webhook_view(request: HttpRequest):
         logger.warning("Paystack webhook received without signature header.")
         return HttpResponse(status=400)
 
-    # 1. Verify HMAC SHA512 Signature
     secret_bytes = settings.PAYSTACK_SECRET_KEY.encode("utf-8")
     computed_signature = hmac.new(
         key=secret_bytes,
@@ -105,7 +103,6 @@ def paystack_webhook_view(request: HttpRequest):
         logger.warning("Paystack webhook signature mismatch - possible spoofing attempt.")
         return HttpResponse(status=400)
 
-    # 2. Parse Webhook Payload
     try:
         payload = json.loads(request.body.decode("utf-8"))
     except json.JSONDecodeError:
@@ -115,7 +112,6 @@ def paystack_webhook_view(request: HttpRequest):
     event = payload.get("event")
     data = payload.get("data", {})
 
-    # 3. Process 'charge.success'
     if event == "charge.success":
         reference = data.get("reference")
         amount_paid_kobo = data.get("amount")
@@ -123,28 +119,21 @@ def paystack_webhook_view(request: HttpRequest):
 
         try:
             with transaction.atomic():
-                # Lock row to prevent race condition between webhook & callback
                 order = Order.objects.select_for_update().get(reference=reference)
 
                 if order.status == Order.PaymentStatus.SUCCESS:
-                    # Idempotency check: Already processed
                     return HttpResponse(status=200)
 
-                # Validate amount received matches order amount exactly
                 if amount_paid_kobo != order.amount_in_kobo:
-                    logger.error(
-                        f"Amount mismatch for {order.reference}. Expected {order.amount_in_kobo}, got {amount_paid_kobo}"
-                    )
+                    logger.error(f"Amount mismatch for {order.reference}. Expected {order.amount_in_kobo}, got {amount_paid_kobo}")
                     order.status = Order.PaymentStatus.FAILED
                     order.save(update_fields=["status", "updated_at"])
                     return HttpResponse(status=200)
 
-                # Mark Order as Paid
                 order.status = Order.PaymentStatus.SUCCESS
                 order.paystack_transaction_id = str(tx_id)
                 order.save(update_fields=["status", "paystack_transaction_id", "updated_at"])
 
-                # Fulfill order (Reduce sneaker inventory, clear session cart, trigger confirmation email)
                 _fulfill_order(order)
 
         except Order.DoesNotExist:
@@ -157,8 +146,6 @@ def paystack_webhook_view(request: HttpRequest):
     return HttpResponse(status=200)
 
 
-# payments/views.py (Update the _fulfill_order function at the bottom)
-
 def _fulfill_order(order: Order):
     """
     Hook for inventory deduction and alerts.
@@ -166,10 +153,8 @@ def _fulfill_order(order: Order):
     """
     logger.info(f"Successfully fulfilled Order {order.reference} for {order.email}")
     
-    # Deduct stock for each purchased item
     for item in order.items.all():
         if item.variant:
-            # Prevent negative stock just in case of edge cases
             if item.variant.stock >= item.quantity:
                 item.variant.stock -= item.quantity
             else:

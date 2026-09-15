@@ -1,7 +1,6 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect
 from .models import Product, Category, Brand, Wishlist
 
 def home_view(request):
@@ -17,9 +16,8 @@ def home_view(request):
 
     user_wishlist = []
     if request.user.is_authenticated:
-        from .models import Wishlist
-        # Grabs just the product IDs the user has saved, all in one fast database query
-        user_wishlist = Wishlist.objects.filter(user=request.user).values_list('product_id', flat=True)
+        # WRAPPED IN list() so the template can read it perfectly
+        user_wishlist = list(Wishlist.objects.filter(user=request.user).values_list('product_id', flat=True))
     
     return render(request, 'store/home.html', {
         'categories': categories,
@@ -43,11 +41,11 @@ def product_detail(request, slug):
         'variants': product.variants.all(), 
         'images': product.images.all(),
     }
+    
     user_wishlist = []
     if request.user.is_authenticated:
-        from .models import Wishlist
-        # Grabs just the product IDs the user has saved, all in one fast database query
-        user_wishlist = Wishlist.objects.filter(user=request.user).values_list('product_id', flat=True)
+        # WRAPPED IN list()
+        user_wishlist = list(Wishlist.objects.filter(user=request.user).values_list('product_id', flat=True))
     
     context['user_wishlist'] = user_wishlist
     return render(request, 'store/product_detail.html', context)
@@ -95,15 +93,15 @@ def product_list(request):
 
     user_wishlist = []
     if request.user.is_authenticated:
-        from .models import Wishlist
-        # Grabs just the product IDs the user has saved, all in one fast database query
-        user_wishlist = Wishlist.objects.filter(user=request.user).values_list('product_id', flat=True)
+        # WRAPPED IN list()
+        user_wishlist = list(Wishlist.objects.filter(user=request.user).values_list('product_id', flat=True))
         
     return render(request, 'store/store.html', {
         'products': products.distinct(),
         'categories': categories,
         'brands': brands,
         'current_category': category_slug,
+        'user_wishlist': user_wishlist, # ADDED: This was missing!
     })
 
 @login_required
