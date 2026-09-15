@@ -7,16 +7,16 @@
     <div class="flex items-center overflow-x-auto snap-x gap-2 pb-4 scrollbar-hide mb-2">
         <!-- 'All' Button -->
         <a href="{% url 'store:list' %}" 
-           class="snap-start shrink-0 inline-block whitespace-nowrap px-5 py-2 text-sm font-medium rounded-full transition-colors 
-                  {% if not current_category %}bg-green-700 text-white font-bold border-transparent{% else %}bg-white border border-gray-200 text-gray-600 hover:bg-gray-50{% endif %}">
+           class="snap-start shrink-0 inline-block whitespace-nowrap px-5 py-2 text-sm font-medium rounded-full transition-all duration-300
+                  {% if not current_category %}bg-wine text-white font-bold border-transparent shadow-md{% else %}bg-white border border-gray-200 text-gray-600 hover:border-wine hover:text-wine hover:shadow-sm{% endif %}">
             All
         </a>
 
         <!-- Dynamic Category Buttons -->
         {% for category in categories %}
             <a href="{% url 'store:list' %}?category={{ category.slug }}" 
-               class="snap-start shrink-0 inline-block whitespace-nowrap px-5 py-2 text-sm font-medium rounded-full transition-colors 
-                      {% if current_category == category.slug %}bg-green-700 text-white font-bold border-transparent{% else %}bg-white border border-gray-200 text-gray-600 hover:bg-gray-50{% endif %}">
+               class="snap-start shrink-0 inline-block whitespace-nowrap px-5 py-2 text-sm font-medium rounded-full transition-all duration-300
+                      {% if current_category == category.slug %}bg-wine text-white font-bold border-transparent shadow-md{% else %}bg-white border border-gray-200 text-gray-600 hover:border-wine hover:text-wine hover:shadow-sm{% endif %}">
                 {{ category.name }}
             </a>
         {% endfor %}
@@ -26,8 +26,8 @@
     <div class="flex justify-between items-center mb-6">
         <p class="text-sm font-bold text-gray-900">{{ products.count }} shoes</p>
         <div class="flex gap-2">
-            <!-- Added onclick to trigger the drawer -->
-            <button onclick="toggleFilterDrawer(true)" class="flex items-center gap-2 px-4 py-1.5 border border-gray-200 rounded-full text-sm font-medium bg-white hover:bg-gray-50 transition active:scale-95">
+            <!-- Filter Button -->
+            <button onclick="toggleFilterDrawer(true)" class="flex items-center gap-2 px-4 py-1.5 border border-gray-200 rounded-full text-sm font-medium bg-white hover:border-wine hover:text-wine transition-all active:scale-95">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg> Filter
             </button>
         </div>
@@ -48,7 +48,7 @@
     <aside id="filter-drawer" class="fixed top-0 right-0 z-[70] w-full max-w-xs h-screen bg-white shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
         <div class="px-5 py-4 border-b border-gray-100 flex justify-between items-center">
             <h2 class="text-lg font-extrabold text-gray-900">Filters</h2>
-            <button onclick="toggleFilterDrawer(false)" class="p-2 -mr-2 text-gray-400 hover:text-black">
+            <button onclick="toggleFilterDrawer(false)" class="p-2 -mr-2 text-gray-400 hover:text-wine transition-colors">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
         </div>
@@ -61,7 +61,7 @@
             <!-- Sort By -->
             <div>
                 <h3 class="text-xs font-bold text-gray-400 mb-3 uppercase tracking-wider">Sort By</h3>
-                <select name="sort" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-black outline-none">
+                <select name="sort" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium focus:border-wine focus:ring-2 focus:ring-wine/30 outline-none transition-all">
                     <option value="newest" {% if request.GET.sort == 'newest' %}selected{% endif %}>Newest Arrivals</option>
                     <option value="price_asc" {% if request.GET.sort == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
                     <option value="price_desc" {% if request.GET.sort == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
@@ -74,8 +74,8 @@
                 <div class="space-y-3">
                     {% for brand in brands %}
                         <label class="flex items-center gap-3 cursor-pointer group">
-                            <input type="radio" name="brand" value="{{ brand.slug }}" {% if request.GET.brand == brand.slug %}checked{% endif %} class="w-4 h-4 text-black focus:ring-black border-gray-300">
-                            <span class="text-sm font-medium text-gray-700 group-hover:text-black">{{ brand.name }}</span>
+                            <input type="radio" name="brand" value="{{ brand.slug }}" {% if request.GET.brand == brand.slug %}checked{% endif %} class="w-4 h-4 text-wine focus:ring-wine border-gray-300 transition-colors">
+                            <span class="text-sm font-medium text-gray-700 group-hover:text-wine transition-colors">{{ brand.name }}</span>
                         </label>
                     {% endfor %}
                 </div>
@@ -85,16 +85,16 @@
             <div>
                 <h3 class="text-xs font-bold text-gray-400 mb-3 uppercase tracking-wider">Price Range (₦)</h3>
                 <div class="flex items-center gap-2">
-                    <input type="number" name="min_price" placeholder="Min" value="{{ request.GET.min_price }}" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-black outline-none">
+                    <input type="number" name="min_price" placeholder="Min" value="{{ request.GET.min_price }}" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:border-wine focus:ring-2 focus:ring-wine/30 outline-none transition-all">
                     <span class="text-gray-400">-</span>
-                    <input type="number" name="max_price" placeholder="Max" value="{{ request.GET.max_price }}" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-black outline-none">
+                    <input type="number" name="max_price" placeholder="Max" value="{{ request.GET.max_price }}" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:border-wine focus:ring-2 focus:ring-wine/30 outline-none transition-all">
                 </div>
             </div>
 
             <!-- Sticky Bottom Buttons -->
             <div class="absolute bottom-0 left-0 w-full bg-white border-t border-gray-100 p-4 flex gap-3 pb-safe">
-                <a href="{% url 'store:list' %}" class="flex-1 py-3 text-center text-sm font-bold text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition">Clear All</a>
-                <button type="submit" class="flex-1 py-3 text-center text-sm font-bold text-white bg-black rounded-xl hover:bg-gray-800 transition shadow-md">Apply</button>
+                <a href="{% url 'store:list' %}" class="flex-1 py-3 text-center text-sm font-bold text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 hover:text-wine transition-colors">Clear All</a>
+                <button type="submit" class="flex-1 py-3 text-center text-sm font-bold text-white bg-wine rounded-xl hover:bg-[#5a252b] transition shadow-md">Apply</button>
             </div>
         </form>
     </aside>

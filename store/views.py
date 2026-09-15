@@ -7,15 +7,18 @@ def home_view(request):
     # Fetch top 4 featured sneakers
     featured_products = Product.objects.filter(is_featured=True).prefetch_related('images')[:4]
     
-    # Fetch 8 newest arrivals, excluding the featured ones so we don't show duplicates
+    # Fetch 8 newest arrivals, excluding the featured ones
     new_arrivals = Product.objects.exclude(id__in=featured_products).order_by('-created_at').prefetch_related('images')[:8]
+    
+    # Fetch only brands that have at least one product associated with them
+    active_brands = Brand.objects.filter(products__isnull=False).distinct()
     
     return render(request, 'store/home.html', {
         'categories': categories,
         'featured_products': featured_products,
         'new_arrivals': new_arrivals,
+        'brands': active_brands,
     })
-
 
 def product_detail(request, slug):
     # prefetch_related prevents N+1 queries when looping through images and variants in the template

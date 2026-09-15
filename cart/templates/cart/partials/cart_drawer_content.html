@@ -1,20 +1,19 @@
-<!-- templates/cart/partials/cart_drawer_content.html -->
 <div id="cart-drawer-container" class="flex flex-col h-full bg-white shadow-xl">
     <!-- Header -->
     <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
         <h2 class="text-lg font-bold text-gray-900">Your Cart ({{ cart|length }})</h2>
         <button onclick="toggleCartDrawer(false)"
-            class="text-gray-400 hover:text-black transition-colors text-2xl font-bold">&times;</button>
+            class="text-gray-400 hover:text-wine transition-colors text-2xl font-bold">&times;</button>
     </div>
 
     <!-- Items List -->
     <div class="flex-1 overflow-y-auto px-6 py-4 space-y-4">
         {% if cart %}
         {% for item in cart %}
-        <div class="flex items-center gap-4 py-3 border-b border-gray-100">
+        <div class="flex items-center gap-4 py-3 border-b border-gray-100 group">
             {% if item.image %}
             <img src="{{ item.image.image.url }}" alt="{{ item.product.name }}"
-                class="w-16 h-16 object-cover rounded-lg bg-gray-50 border border-gray-200">
+                class="w-16 h-16 object-cover rounded-lg bg-gray-50 border border-gray-200 group-hover:border-wine/30 transition-colors">
             {% else %}
             <div
                 class="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center text-xs text-gray-400 border border-gray-200">
@@ -22,25 +21,25 @@
             {% endif %}
 
             <div class="flex-1 min-w-0">
-                <h3 class="text-sm font-semibold text-gray-800 truncate">{{ item.product.name }}</h3>
+                <h3 class="text-sm font-semibold text-gray-800 truncate group-hover:text-wine transition-colors">{{ item.product.name }}</h3>
                 <p class="text-xs text-gray-500 mt-0.5">Size: EU {{ item.variant.size }}</p>
-                <p class="text-sm font-bold text-gray-900 mt-1">₦{{ item.price|floatformat:2 }}</p>
+                <p class="text-sm font-bold text-wine mt-1">₦{{ item.price|floatformat:2 }}</p>
             </div>
 
             <!-- Quantity Adjuster -->
-            <div class="flex items-center border border-gray-200 rounded-md bg-gray-50">
+            <div class="flex items-center border border-gray-200 rounded-md bg-gray-50 overflow-hidden">
                 <button hx-post="{% url 'cart:update' item.variant.id %}"
                     hx-vals='{"quantity": {{ item.quantity|add:"-1" }}}' hx-target="#cart-drawer-container"
-                    hx-swap="outerHTML" class="px-2 py-1 text-gray-600 hover:bg-gray-200 transition-colors">-</button>
+                    hx-swap="outerHTML" class="px-2 py-1 text-gray-600 hover:bg-wine hover:text-white transition-colors">-</button>
                 <span class="px-2 text-sm font-medium bg-white border-x border-gray-200 py-1">{{ item.quantity }}</span>
                 <button hx-post="{% url 'cart:update' item.variant.id %}"
                     hx-vals='{"quantity": {{ item.quantity|add:"1" }}}' hx-target="#cart-drawer-container"
-                    hx-swap="outerHTML" class="px-2 py-1 text-gray-600 hover:bg-gray-200 transition-colors">+</button>
+                    hx-swap="outerHTML" class="px-2 py-1 text-gray-600 hover:bg-wine hover:text-white transition-colors">+</button>
             </div>
 
             <!-- Remove Button -->
             <button hx-post="{% url 'cart:remove' item.variant.id %}" hx-target="#cart-drawer-container"
-                hx-swap="outerHTML" class="text-gray-400 hover:text-red-600 text-lg ml-2 transition-colors"
+                hx-swap="outerHTML" class="text-gray-300 hover:text-wine text-lg ml-2 transition-colors"
                 title="Remove item">
                 &times;
             </button>
@@ -53,7 +52,7 @@
             </div>
             <p class="text-gray-500 font-medium">Your cart is currently empty!</p>
             <button onclick="toggleCartDrawer(false)"
-                class="text-black font-bold border-b-2 border-black hover:text-gray-600 hover:border-gray-600 transition-colors pb-1">
+                class="text-wine font-bold border-b-2 border-wine hover:text-[#5a252b] hover:border-[#5a252b] transition-colors pb-1">
                 Continue Shopping
             </button>
         </div>
@@ -65,23 +64,22 @@
     <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
         <div class="flex justify-between text-base font-bold text-gray-900 mb-3">
             <span>Subtotal</span>
-            <span>₦{{ cart.get_total_price|floatformat:2 }}</span>
+            <span class="text-wine">₦{{ cart.get_total_price|floatformat:2 }}</span>
         </div>
         <p class="text-xs text-gray-500 mb-4">Shipping and discounts calculated at checkout.</p>
 
         {% if request.user.is_authenticated %}
         <a href="{% url 'orders:checkout' %}"
-            class="block w-full py-3 text-center font-bold text-white bg-black rounded-lg hover:bg-gray-800 transition-colors">
+            class="block w-full py-3 text-center font-bold text-white bg-wine rounded-lg hover:bg-[#5a252b] transition-colors shadow-md hover:shadow-lg">
             Proceed to Checkout
         </a>
         {% else %}
         <!-- Sends guest to Login, then automatically bounces them to Checkout -->
         <a href="{% url 'accounts:login' %}?next={% url 'orders:checkout' %}"
-            class="block w-full py-3 text-center font-bold text-white bg-black rounded-lg hover:bg-gray-800 transition-colors">
+            class="block w-full py-3 text-center font-bold text-white bg-wine rounded-lg hover:bg-[#5a252b] transition-colors shadow-md hover:shadow-lg">
             Login to Checkout
         </a>
         {% endif %}
     </div>
     {% endif %}
-</div>
 </div>
