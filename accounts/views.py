@@ -93,3 +93,14 @@ def download_orders_csv(request):
         ])
         
     return response
+
+@login_required
+def account_profile_view(request):
+    """Standard, full-page view for the user profile."""
+    orders = Order.objects.filter(user=request.user).order_by('-created_at')[:10]
+    wishlist_count = request.user.wishlist_items.count()
+
+    return render(request, 'accounts/profile.html', {
+        'orders': orders,
+        'wishlist_count': wishlist_count,
+    })

@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 py-8 mb-10">
+    <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight mb-6">My Account</h1>
+
+    <!-- User Profile Card -->
+    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 mb-6">
+        <div class="w-16 h-16 bg-wine text-white rounded-full flex items-center justify-center text-2xl font-black shadow-md">
+            {{ user.username|make_list|first|upper }}
+        </div>
+        <div>
+            <h3 class="font-bold text-gray-900 text-xl">{{ user.first_name|default:user.username }}</h3>
+            <p class="text-sm text-gray-500">{{ user.email }}</p>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="grid grid-cols-2 gap-4 mb-8">
+        <a href="{% url 'store:wishlist' %}" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center group hover:border-wine transition-colors">
+            <span class="text-2xl font-black text-gray-900 group-hover:text-wine">{{ wishlist_count }}</span>
+            <span class="text-xs font-bold text-gray-500 uppercase mt-1">Wishlist</span>
+        </a>
+        <button onclick="toggleCartDrawer(true);" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center group hover:border-wine transition-colors w-full">
+            <span class="text-2xl font-black text-gray-900 group-hover:text-wine">{{ cart|length }}</span>
+            <span class="text-xs font-bold text-gray-500 uppercase mt-1">In Cart</span>
+        </button>
+    </div>
+
+    <!-- Order History -->
+    <h3 class="text-sm font-bold text-gray-900 mb-4 uppercase tracking-wide">Recent Orders</h3>
+    {% if orders %}
+        <div class="space-y-3 mb-8">
+            {% for order in orders %}
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col gap-2">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <span class="text-[10px] font-bold text-gray-400">{{ order.created_at|date:"M d, Y" }}</span>
+                        <h4 class="font-bold text-gray-900 text-sm">{{ order.reference }}</h4>
+                    </div>
+                    {% if order.status == 'SUCCESS' %}
+                        <span class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-1 rounded-sm uppercase">{{ order.status }}</span>
+                    {% elif order.status == 'PENDING' %}
+                        <span class="bg-yellow-100 text-yellow-700 text-[10px] font-bold px-2 py-1 rounded-sm uppercase">{{ order.status }}</span>
+                    {% else %}
+                        <span class="bg-red-100 text-red-700 text-[10px] font-bold px-2 py-1 rounded-sm uppercase">{{ order.status }}</span>
+                    {% endif %}
+                </div>
+                <div class="font-black text-wine">₦{{ order.total_amount }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-dashed border-gray-200 text-center mb-8">
+            <p class="text-sm text-gray-500">You haven't placed any orders yet.</p>
+        </div>
+    {% endif %}
+
+    <!-- Logout Button -->
+    <a href="{% url 'accounts:logout' %}" class="w-full py-3 flex items-center justify-center gap-2 text-sm font-bold text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+        Sign Out
+    </a>
+</div>
+{% endblock %}
