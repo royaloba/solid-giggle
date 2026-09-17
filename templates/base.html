@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stylinsole | Sneakers That Speak</title>
-    
+
     <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-    
+
     <!-- TAILWIND CUSTOM CONFIGURATION -->
     <script>
         tailwind.config = {
@@ -44,49 +45,109 @@
 <body class="bg-gray-50 text-gray-900 font-sans flex flex-col min-h-screen pb-20 md:pb-0">
 
     <!-- Top Header -->
-    <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-gray-100 px-4 py-3 flex items-center justify-between shadow-sm">
-        
+    <header
+        class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-gray-100 px-4 py-3 flex items-center justify-between shadow-sm">
+
         <!-- LEFT SIDE: Logo -->
         <a href="{% url 'store:home' %}" class="flex items-center gap-2">
             <h1 class="text-2xl font-extrabold tracking-tighter uppercase">STYLINSOLE</h1>
         </a>
-        
+
         <!-- RIGHT SIDE: Greeting, Search, Auth, Cart -->
         <div class="flex items-center gap-4">
-            
+
             {% if user.is_authenticated %}
-                <span class="md:hidden text-[11px] font-bold text-gray-500 mt-1">Hi, {{ user.username }} 👋</span>
+            <span class="md:hidden text-[11px] font-bold text-gray-500 mt-1">Hi, {{ user.username }} 👋</span>
             {% endif %}
 
             <!-- FIXED: Search Bar (Desktop) -->
             <form action="{% url 'store:list' %}" method="GET" class="hidden md:block relative">
-                <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Search shoes, brands..." class="bg-gray-100 text-sm rounded-full pl-10 pr-4 py-2 w-64 outline-none focus:ring-2 focus:ring-gray-200">
+                <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Search shoes, brands..."
+                    class="bg-gray-100 text-sm rounded-full pl-10 pr-4 py-2 w-64 outline-none focus:ring-2 focus:ring-gray-200">
                 <button type="submit" class="absolute left-4 top-2.5 text-gray-400 hover:text-wine transition-colors">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
                 </button>
             </form>
-            
+
             <!-- FIXED: Auth Links (Desktop) -->
-            <div class="hidden md:flex items-center gap-4 text-sm font-bold text-gray-600 border-r border-gray-200 pr-4">
+            <div
+                class="hidden md:flex items-center gap-4 text-sm font-bold text-gray-600 border-r border-gray-200 pr-4">
                 {% if user.is_authenticated %}
-                    <span class="text-gray-900">Hi, {{ user.username }}</span>
-                    <!-- Standard page link instead of HTMX -->
-                    <a href="{% url 'accounts:profile' %}" class="hover:text-black transition">Account</a>
-                    <a href="{% url 'accounts:logout' %}" class="hover:text-red-600 transition ml-2">Logout</a>
+                <span class="text-gray-900">Hi, {{ user.username }}</span>
+                <!-- Standard page link instead of HTMX -->
+                <a href="{% url 'accounts:profile' %}" class="hover:text-black transition">Account</a>
+                <a href="{% url 'accounts:logout' %}" class="hover:text-red-600 transition ml-2">Logout</a>
                 {% else %}
-                    <a href="{% url 'accounts:login' %}" class="hover:text-black transition">Log In</a>
-                    <a href="{% url 'accounts:register' %}" class="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition">Sign Up</a>
+                <a href="{% url 'accounts:login' %}" class="hover:text-black transition">Log In</a>
+                <a href="{% url 'accounts:register' %}"
+                    class="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition">Sign Up</a>
                 {% endif %}
             </div>
 
+            {% if user.is_authenticated %}
+            <button hx-get="{% url 'store:toggle_wishlist' product.id %}" hx-target="this" hx-swap="outerHTML"
+                class="absolute top-5 right-5 z-10 hover:scale-110 transition-all duration-300 focus:outline-none">
+
+                <!-- FIXED: Uses the boolean from HTMX OR the ID list from page load -->
+                {% if in_wishlist or product.id in user_wishlist %}
+                <!-- Solid Wine Heart -->
+                <svg class="w-5 h-5 text-wine drop-shadow-sm" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd"
+                        d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
+                        clip-rule="evenodd"></path>
+                </svg>
+                {% else %}
+                <!-- Outline Heart -->
+                <svg class="w-5 h-5 text-gray-300 hover:text-wine transition-colors" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
+                    </path>
+                </svg>
+                {% endif %}
+            </button>
+            {% else %}
+            <a href="{% url 'accounts:login' %}"
+                class="absolute top-5 right-5 z-10 text-gray-300 hover:text-wine transition-colors"
+                title="Login to save to wishlist">
+                <!-- Outline Heart (Guest User) -->
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
+                    </path>
+                </svg>
+            </a>
+            {% endif %}
+
+            <!-- HTMX OUT-OF-BAND SWAPS (Updates both navbars instantly) -->
+            {% if request.headers.get|default:'' == 'HX-Request' %}
+            <!-- 1. Updates Desktop Navbar Badge -->
+            <span id="wishlist-badge-desktop" hx-swap-oob="true"
+                class="absolute top-0 right-0 inline-flex items-center justify-center w-4 h-4 text-[10px] font-bold text-white bg-wine rounded-full transform translate-x-1/4 -translate-y-1/4">
+                {{ wishlist_count }}
+            </span>
+
+            <!-- 2. Updates Mobile Bottom Nav Badge -->
+            <span id="wishlist-badge-mobile" hx-swap-oob="true"
+                class="absolute top-1 right-3 inline-flex items-center justify-center w-4 h-4 text-[10px] font-bold text-white bg-wine rounded-full shadow-sm">
+                {{ wishlist_count }}
+            </span>
+            {% endif %}
+
             <!-- Original HTMX Cart Trigger -->
-            <button onclick="toggleCartDrawer(true)" class="relative p-1 text-gray-900 hover:opacity-70 transition ml-1">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                <span id="cart-badge" 
-                      hx-get="{% url 'cart:badge' %}" 
-                      hx-trigger="cartUpdated from:body" 
-                      hx-swap="outerHTML"
-                      class="absolute top-0 right-0 inline-flex items-center justify-center w-4 h-4 text-[10px] font-bold text-white bg-red-600 rounded-full transform translate-x-1/4 -translate-y-1/4">
+            <button onclick="toggleCartDrawer(true)"
+                class="relative p-1 text-gray-900 hover:opacity-70 transition ml-1">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z">
+                    </path>
+                </svg>
+                <span id="cart-badge" hx-get="{% url 'cart:badge' %}" hx-trigger="cartUpdated from:body"
+                    hx-swap="outerHTML"
+                    class="absolute top-0 right-0 inline-flex items-center justify-center w-4 h-4 text-[10px] font-bold text-white bg-red-600 rounded-full transform translate-x-1/4 -translate-y-1/4">
                     {{ cart|length }}
                 </span>
             </button>
@@ -96,9 +157,13 @@
     <!-- FIXED: Mobile Search Bar (Only visible on small screens) -->
     <div class="md:hidden px-4 py-3 bg-white border-b border-gray-100">
         <form action="{% url 'store:list' %}" method="GET" class="relative">
-            <input type="text" name="q" placeholder="Search shoes, brands..." value="{{ request.GET.q }}" class="w-full bg-gray-100 text-sm rounded-full pl-10 pr-4 py-2.5 outline-none focus:ring-2 focus:ring-wine/30 transition-all">
+            <input type="text" name="q" placeholder="Search shoes, brands..." value="{{ request.GET.q }}"
+                class="w-full bg-gray-100 text-sm rounded-full pl-10 pr-4 py-2.5 outline-none focus:ring-2 focus:ring-wine/30 transition-all">
             <button type="submit" class="absolute left-4 top-2.5 text-gray-400 hover:text-wine transition-colors">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
             </button>
         </form>
     </div>
@@ -109,37 +174,99 @@
         {% endblock %}
     </main>
 
-   <!-- FIXED: Mobile Bottom Navigation -->
-    <nav class="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 flex justify-around items-center py-2 z-30 pb-safe">
+    <!-- FIXED: Mobile Bottom Navigation -->
+    <nav
+        class="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 flex justify-around items-center py-2 z-30 pb-safe">
         <!-- Home -->
-        <a href="{% url 'store:home' %}" class="flex flex-col items-center p-2 {% if request.resolver_match.url_name == 'home' %}text-wine font-bold{% else %}text-gray-400{% endif %} transition">
-            <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 101.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg>
+        <a href="{% url 'store:home' %}"
+            class="flex flex-col items-center p-2 {% if request.resolver_match.url_name == 'home' %}text-wine font-bold{% else %}text-gray-400{% endif %} transition">
+            {% if request.resolver_match.url_name == 'home' %}
+            <!-- Solid Home -->
+            <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                    d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 101.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z">
+                </path>
+            </svg>
+            {% else %}
+            <!-- Outline Home -->
+            <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6">
+                </path>
+            </svg>
+            {% endif %}
             <span class="text-[10px]">Home</span>
         </a>
-        
+
         <!-- Store -->
-        <a href="{% url 'store:list' %}" class="flex flex-col items-center p-2 {% if request.resolver_match.url_name == 'list' or request.resolver_match.url_name == 'product_detail' %}text-wine font-bold{% else %}text-gray-400{% endif %} transition">
-            <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+        <a href="{% url 'store:list' %}"
+            class="flex flex-col items-center p-2 {% if request.resolver_match.url_name == 'list' or request.resolver_match.url_name == 'product_detail' %}text-wine font-bold{% else %}text-gray-400{% endif %} transition">
+            {% if request.resolver_match.url_name == 'list' or request.resolver_match.url_name == 'product_detail' %}
+            <!-- Solid Store -->
+            <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd"
+                    d="M10 2a4 4 0 00-4 4v1H5a1 1 0 00-.994.89l-1 9A1 1 0 004 18h12a1 1 0 00.994-1.11l-1-9A1 1 0 0015 7h-1V6a4 4 0 00-4-4zm2 5V6a2 2 0 10-4 0v1h4zm-6 3a1 1 0 112 0 1 1 0 01-2 0zm7-1a1 1 0 100 2 1 1 0 000-2z"
+                    clip-rule="evenodd"></path>
+            </svg>
+            {% else %}
+            <!-- Outline Store -->
+            <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+            </svg>
+            {% endif %}
             <span class="text-[10px]">Store</span>
         </a>
-        
+
         <!-- Wishlist -->
-        <a href="{% url 'store:wishlist' %}" class="flex flex-col items-center p-2 {% if request.resolver_match.url_name == 'wishlist' %}text-wine font-bold{% else %}text-gray-400{% endif %} transition">
+        <!-- Wishlist -->
+        <a href="{% url 'store:wishlist' %}" class="relative flex flex-col items-center p-2 {% if request.resolver_match.url_name == 'wishlist' %}text-wine font-bold{% else %}text-gray-400{% endif %} transition">
+            
+            <!-- NEW: Mobile Badge -->
+            {% if user.is_authenticated %}
+            <span id="wishlist-badge-mobile" class="absolute top-1 right-3 inline-flex items-center justify-center w-4 h-4 text-[10px] font-bold text-white bg-wine rounded-full shadow-sm">
+                {{ user_wishlist|length|default:"0" }}
+            </span>
+            {% else %}
+            <span id="wishlist-badge-mobile" class="hidden"></span>
+            {% endif %}
+
+            {% if request.resolver_match.url_name == 'wishlist' %}
+            <!-- Solid Wishlist -->
+            <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"></path></svg>
+            {% else %}
+            <!-- Outline Wishlist -->
             <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+            {% endif %}
             <span class="text-[10px]">Wishlist</span>
         </a>
-        
+
         <!-- Account -->
-        <a href="{% if user.is_authenticated %}{% url 'accounts:profile' %}{% else %}{% url 'accounts:login' %}{% endif %}" class="flex flex-col items-center p-2 {% if request.resolver_match.url_name == 'profile' %}text-wine font-bold{% else %}text-gray-400 hover:text-wine{% endif %} transition">
-            <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+        <a href="{% if user.is_authenticated %}{% url 'accounts:profile' %}{% else %}{% url 'accounts:login' %}{% endif %}"
+            class="flex flex-col items-center p-2 {% if request.resolver_match.url_name == 'profile' %}text-wine font-bold{% else %}text-gray-400 hover:text-wine{% endif %} transition">
+            {% if request.resolver_match.url_name == 'profile' %}
+            <!-- Solid Account -->
+            <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd">
+                </path>
+            </svg>
+            {% else %}
+            <!-- Outline Account -->
+            <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+            </svg>
+            {% endif %}
             <span class="text-[10px]">Account</span>
         </a>
     </nav>
 
     <!-- Slide-out Drawer Backdrop & Container (For CART ONLY) -->
-    <div id="cart-drawer-backdrop" onclick="toggleCartDrawer(false)" class="fixed inset-0 bg-black/40 z-50 hidden transition-opacity"></div>
+    <div id="cart-drawer-backdrop" onclick="toggleCartDrawer(false)"
+        class="fixed inset-0 bg-black/40 z-50 hidden transition-opacity"></div>
 
-    <aside id="cart-drawer" class="fixed top-0 right-0 z-[60] w-full max-w-md h-screen transition-transform transform translate-x-full duration-300 ease-in-out bg-white shadow-2xl">
+    <aside id="cart-drawer"
+        class="fixed top-0 right-0 z-[60] w-full max-w-md h-screen transition-transform transform translate-x-full duration-300 ease-in-out bg-white shadow-2xl">
         {% include 'cart/partials/cart_drawer_content.html' %}
     </aside>
 
@@ -157,9 +284,10 @@
         }
 
         // Open the drawer automatically whenever an item is added
-        document.body.addEventListener('cartUpdated', function() {
+        document.body.addEventListener('cartUpdated', function () {
             toggleCartDrawer(true);
         });
     </script>
 </body>
+
 </html>

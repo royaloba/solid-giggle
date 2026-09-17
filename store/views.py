@@ -104,18 +104,28 @@ def product_list(request):
 
 @login_required
 def toggle_wishlist(request, product_id):
-    """Safely adds or removes a product from the wishlist and refreshes the page."""
+    """Safely adds or removes a product from the wishlist."""
     product = get_object_or_404(Product, id=product_id)
     
-    # Check if the item is already in the wishlist
     wishlist_item = Wishlist.objects.filter(user=request.user, product=product).first()
     
     if wishlist_item:
         wishlist_item.delete() # Remove if exists
+        in_wishlist = False
     else:
         Wishlist.objects.create(user=request.user, product=product) # Add if it doesn't
+        in_wishlist = True
         
-    # Safely redirect back to whatever page the user was just on
+    if request.headers.get('HX-Request'):
+        # Get the new total count of items in the wishlist
+        wishlist_count = Wishlist.objects.filter(user=request.user).count()
+        
+        return render(request, 'store/partials/wishlist_heart.html', {
+            'product': product,
+            'in_wishlist': in_wishlist, # Pass the new state explicitly
+            'wishlist_count': wishlist_count # Pass the count for the OOB swap
+        })
+        
     return redirect(request.META.get('HTTP_REFERER', 'store:list'))
 
 @login_required
