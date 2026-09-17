@@ -36,8 +36,6 @@ def product_detail(request, slug):
     
     context = {
         'product': product,
-        # Optional: You can filter out variants with 0 stock here, 
-        # or handle it visually in the template (shown below)
         'variants': product.variants.all(), 
         'images': product.images.all(),
     }
@@ -101,23 +99,24 @@ def product_list(request):
         'categories': categories,
         'brands': brands,
         'current_category': category_slug,
-        'user_wishlist': user_wishlist, # ADDED: This was missing!
+        'user_wishlist': user_wishlist,
     })
 
 @login_required
 def toggle_wishlist(request, product_id):
+    """Safely adds or removes a product from the wishlist and refreshes the page."""
     product = get_object_or_404(Product, id=product_id)
-    wishlist_item, created = Wishlist.objects.get_or_create(user=request.user, product=product)
     
-    if not created:
-        user_wishlist = request.user.wishlist.values_list('id', flat=True) 
-        return render(request, 'store/partials/product_card.html', {
-            'product': product,
-            'user_wishlist': user_wishlist
-        })
+    # Check if the item is already in the wishlist
+    wishlist_item = Wishlist.objects.filter(user=request.user, product=product).first()
+    
+    if wishlist_item:
+        wishlist_item.delete() # Remove if exists
+    else:
+        Wishlist.objects.create(user=request.user, product=product) # Add if it doesn't
         
-    # Redirect back to wherever the user clicked it from
-    return redirect(request.META.get('HTTP_REFERER', 'store:home'))
+    # Safely redirect back to whatever page the user was just on
+    return redirect(request.META.get('HTTP_REFERER', 'store:list'))
 
 @login_required
 def wishlist_view(request):
