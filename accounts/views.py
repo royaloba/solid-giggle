@@ -53,17 +53,15 @@ def logout_view(request):
 
 @login_required
 def account_drawer_view(request):
-    """Fetches user data, cleans up old orders, and returns the HTMX drawer content."""
-    # 1. 30-Day Auto-Deletion Logic
-    thirty_days_ago = timezone.now() - timedelta(days=30)
-    Order.objects.filter(user=request.user, created_at__lt=thirty_days_ago).delete()
-
-    # 2. Fetch Active Orders
-    orders = Order.objects.filter(user=request.user).order_by('-created_at')
+    """Safely gathers user statistics and renders the slide-out drawer."""
+    # 1. Safely fetch the last 10 orders for this user
+    orders = Order.objects.filter(user=request.user).order_by('-created_at')[:10]
     
-    # 3. Get Stats
+    # 2. Fetch wishlist count using your exact related_name from store/models.py
+    wishlist_count = request.user.wishlist_items.count()
+
+    # 3. Fetch current cart count
     cart = Cart(request)
-    wishlist_count = request.user.wishlist.count() if hasattr(request.user, 'wishlist') else 0
 
     return render(request, 'accounts/partials/account_drawer_content.html', {
         'orders': orders,

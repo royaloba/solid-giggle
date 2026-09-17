@@ -1,73 +1,76 @@
-<div class="h-full flex flex-col bg-white">
+<div class="h-full flex flex-col bg-gray-50">
     <!-- Header -->
-    <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white z-10">
-        <h2 class="text-xl font-extrabold text-gray-900 tracking-tight">My Account</h2>
-        <button onclick="toggleAccountDrawer(false)" class="p-2 text-gray-400 hover:text-wine transition-colors rounded-full hover:bg-gray-50">
+    <div class="px-6 py-4 border-b border-gray-100 bg-white flex justify-between items-center sticky top-0 z-10">
+        <h2 class="text-xl font-extrabold text-gray-900 uppercase tracking-tight">My Account</h2>
+        <button onclick="toggleAccountDrawer(false)" class="p-2 -mr-2 text-gray-400 hover:text-wine transition">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
     </div>
 
-    <!-- Content -->
-    <div class="flex-1 overflow-y-auto p-5 space-y-8">
+    <!-- Scrollable Content -->
+    <div class="flex-grow overflow-y-auto p-6 space-y-6">
         
-        <!-- Stats / Quick Links -->
-        <div class="grid grid-cols-2 gap-3">
-            <a href="#" hx-get="{% url 'cart:drawer' %}" hx-target="#cart-drawer" hx-swap="innerHTML" onclick="toggleAccountDrawer(false); toggleCartDrawer(true);" class="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-xl border border-gray-100 hover:border-wine/30 hover:shadow-sm transition-all group">
-                <svg class="w-6 h-6 text-gray-400 group-hover:text-wine mb-2 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                <span class="text-sm font-bold text-gray-900">Cart ({{ cart_count }})</span>
-            </a>
-            <a href="{% url 'store:list' %}" class="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-xl border border-gray-100 hover:border-wine/30 hover:shadow-sm transition-all group">
-                <svg class="w-6 h-6 text-gray-400 group-hover:text-wine mb-2 transition-colors" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"></path></svg>
-                <span class="text-sm font-bold text-gray-900">Wishlist ({{ wishlist_count }})</span>
-            </a>
+        <!-- User Profile Card -->
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
+            <div class="w-14 h-14 bg-wine text-white rounded-full flex items-center justify-center text-xl font-black shadow-md">
+                {{ user.username|make_list|first|upper }}
+            </div>
+            <div>
+                <h3 class="font-bold text-gray-900 text-lg">{{ user.first_name|default:user.username }}</h3>
+                <p class="text-xs text-gray-500">{{ user.email }}</p>
+            </div>
         </div>
 
-        <!-- Recent Orders -->
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-2 gap-4">
+            <a href="#" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center group hover:border-wine transition-colors">
+                <span class="text-2xl font-black text-gray-900 group-hover:text-wine">{{ wishlist_count }}</span>
+                <span class="text-xs font-bold text-gray-500 uppercase mt-1">Wishlist</span>
+            </a>
+            <button onclick="toggleAccountDrawer(false); toggleCartDrawer(true);" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center group hover:border-wine transition-colors">
+                <span class="text-2xl font-black text-gray-900 group-hover:text-wine">{{ cart_count }}</span>
+                <span class="text-xs font-bold text-gray-500 uppercase mt-1">In Cart</span>
+            </button>
+        </div>
+
+        <!-- Order History -->
         <div>
-            <div class="flex items-center justify-between mb-4 border-b border-gray-100 pb-2">
-                <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider">Order History</h3>
-                {% if orders %}
-                    <a href="{% url 'accounts:download_orders' %}" class="text-xs font-bold text-wine hover:underline flex items-center gap-1 bg-wine/10 px-2 py-1 rounded-md">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> 
-                        Download CSV
-                    </a>
-                {% endif %}
-            </div>
+            <h3 class="text-sm font-bold text-gray-900 mb-4 uppercase tracking-wide px-1">Recent Orders</h3>
             
-            <div class="space-y-3">
-                {% for order in orders %}
-                    <div class="p-4 border border-gray-100 rounded-xl bg-white shadow-sm hover:shadow-md transition-shadow">
-                        <div class="flex justify-between items-start mb-2">
+            {% if orders %}
+                <div class="space-y-3">
+                    {% for order in orders %}
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col gap-2">
+                        <div class="flex justify-between items-start">
                             <div>
-                                <p class="text-xs text-gray-500 font-medium">Order #{{ order.id }}</p>
-                                <p class="text-sm font-bold text-gray-900">{{ order.created_at|date:"M d, Y" }}</p>
+                                <span class="text-[10px] font-bold text-gray-400">{{ order.created_at|date:"M d, Y" }}</span>
+                                <h4 class="font-bold text-gray-900 text-sm">{{ order.reference }}</h4>
                             </div>
-                            <!-- Assuming you have a 'status' or 'paid' field. Adjust text based on your model -->
-                            <span class="px-2 py-1 bg-green-100 text-green-700 text-[10px] font-extrabold rounded-sm uppercase tracking-wider">Processed</span>
+                            
+                            {% if order.status == 'SUCCESS' %}
+                                <span class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-1 rounded-sm uppercase">{{ order.status }}</span>
+                            {% elif order.status == 'PENDING' %}
+                                <span class="bg-yellow-100 text-yellow-700 text-[10px] font-bold px-2 py-1 rounded-sm uppercase">{{ order.status }}</span>
+                            {% else %}
+                                <span class="bg-red-100 text-red-700 text-[10px] font-bold px-2 py-1 rounded-sm uppercase">{{ order.status }}</span>
+                            {% endif %}
                         </div>
-                        <div class="flex justify-between items-end mt-3 pt-3 border-t border-gray-50">
-                            <p class="text-xs font-medium text-gray-500">{{ order.items.count }} item{{ order.items.count|pluralize }}</p>
-                            <p class="text-sm font-black text-wine">₦{{ order.total_amount }}</p>
-                        </div>
+                        <div class="font-black text-wine">₦{{ order.total_amount }}</div>
                     </div>
-                {% empty %}
-                    <div class="text-center py-8 bg-gray-50 rounded-xl border border-dashed border-gray-200">
-                        <svg class="w-8 h-8 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
-                        <p class="text-sm text-gray-500 font-bold">No recent orders.</p>
-                        <p class="text-xs text-gray-400 mt-1">Time to grab some fresh kicks!</p>
-                    </div>
-                {% endfor %}
-            </div>
-            <div class="mt-4 flex gap-2 p-3 bg-blue-50 border border-blue-100 rounded-lg">
-                <svg class="w-4 h-4 text-blue-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <p class="text-[11px] text-blue-700 leading-tight font-medium">For your privacy and security, all order data is permanently deleted from our servers 30 days after purchase.</p>
-            </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-dashed border-gray-200 text-center">
+                    <p class="text-sm text-gray-500">You haven't placed any orders yet.</p>
+                </div>
+            {% endif %}
         </div>
     </div>
 
-    <!-- Footer / Logout -->
-    <div class="p-5 border-t border-gray-100 bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-        <a href="{% url 'accounts:logout' %}" class="flex items-center justify-center w-full py-4 bg-gray-50 border border-gray-200 text-red-600 font-bold rounded-xl hover:bg-red-50 hover:border-red-200 transition-all shadow-sm">
+    <!-- Footer Logout -->
+    <div class="p-6 bg-white border-t border-gray-100 pb-safe">
+        <a href="{% url 'accounts:logout' %}" class="w-full py-3 flex items-center justify-center gap-2 text-sm font-bold text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
             Sign Out
         </a>
     </div>
