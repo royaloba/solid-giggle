@@ -43,7 +43,7 @@
         {% endif %}
     </a>
 
-    <!-- Details -->
+   <!-- Details -->
     <div class="space-y-1">
         <p class="text-xs text-gray-500 font-medium mt-2">{{ product.brand.name }}</p>
         <h3 class="text-sm font-bold text-gray-900 truncate group-hover:text-wine transition-colors">
@@ -55,17 +55,14 @@
             <span class="text-sm font-extrabold text-wine">₦{{ product.discount_price }}</span>
             <span class="text-[10px] text-gray-400 line-through">₦{{ product.base_price }}</span>
             {% else %}
-            <span class="text-sm font-extrabold text-gray-900 group-hover:text-wine transition-colors">₦{{
-                product.base_price }}</span>
+            <span class="text-sm font-extrabold text-gray-900 group-hover:text-wine transition-colors">₦{{ product.base_price }}</span>
             {% endif %}
         </div>
 
         <!-- Stock Status -->
         <div class="flex items-center gap-1 mt-2">
-            <span
-                class="w-2 h-2 rounded-full {% if product.is_in_stock %}bg-green-500{% else %}bg-red-500{% endif %}"></span>
-            <span class="text-[10px] text-gray-600 font-medium">{% if product.is_in_stock %}In stock{% else %}Sold out{%
-                endif %}</span>
+            <span class="w-2 h-2 rounded-full {% if product.is_in_stock %}bg-green-500{% else %}bg-red-500{% endif %}"></span>
+            <span class="text-[10px] text-gray-600 font-medium">{% if product.is_in_stock %}In stock{% else %}Sold out{% endif %}</span>
         </div>
     </div>
 </div>
