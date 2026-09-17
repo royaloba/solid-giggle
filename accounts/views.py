@@ -3,6 +3,14 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import messages
 from .forms import CustomUserCreationForm
+from django.contrib.auth.decorators import login_required
+from django.utils import timezone
+from datetime import timedelta
+from django.http import HttpResponse
+import csv
+from orders.models import Order 
+from cart.cart import Cart 
+
 
 def register_view(request):
     if request.method == 'POST':
@@ -41,3 +49,49 @@ def logout_view(request):
     logout(request)
     messages.info(request, "You have been logged out securely.")
     return redirect('store:home')
+
+
+@login_required
+def account_drawer_view(request):
+    """Fetches user data, cleans up old orders, and returns the HTMX drawer content."""
+    # 1. 30-Day Auto-Deletion Logic
+    thirty_days_ago = timezone.now() - timedelta(days=30)
+    Order.objects.filter(user=request.user, created_at__lt=thirty_days_ago).delete()
+
+    # 2. Fetch Active Orders
+    orders = Order.objects.filter(user=request.user).order_by('-created_at')
+    
+    # 3. Get Stats
+    cart = Cart(request)
+    wishlist_count = request.user.wishlist.count() if hasattr(request.user, 'wishlist') else 0
+
+    return render(request, 'accounts/partials/account_drawer_content.html', {
+        'orders': orders,
+        'cart_count': len(cart),
+        'wishlist_count': wishlist_count,
+    })
+
+@login_required
+def download_orders_csv(request):
+    """Generates a downloadable CSV file of the user's current orders."""
+    orders = Order.objects.filter(user=request.user).order_by('-created_at')
+    
+    response = HttpResponse(
+        content_type="text/csv",
+        headers={"Content-Disposition": 'attachment; filename="my_stylinsole_orders.csv"'},
+    )
+    
+    writer = csv.writer(response)
+    writer.writerow(["Order ID", "Date", "Items Count", "Total Amount (NGN)"])
+    
+    for order in orders:
+        # Assumes your Order model has these fields; adjust as necessary
+        item_count = sum(item.quantity for item in order.items.all()) if hasattr(order, 'items') else 0
+        writer.writerow([
+            f"#{order.id}", 
+            order.created_at.strftime("%Y-%m-%d %H:%M"), 
+            item_count, 
+            order.total_amount
+        ])
+        
+    return response

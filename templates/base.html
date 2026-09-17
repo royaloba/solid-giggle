@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stylinsole | Sneakers That Speak</title>
     
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     
     <!-- TAILWIND CUSTOM CONFIGURATION -->
@@ -44,47 +44,40 @@
 
     <!-- Top Header (Desktop & Mobile Mixed) -->
     
-    <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-gray-100 px-4 py-3 flex items-center justify-between shadow-sm">
-        <a href="{% url 'store:home' %}" class="flex items-center gap-2 group">
-            <h1 class="text-2xl font-extrabold tracking-tighter uppercase group-hover:text-wine transition-colors">STYLINSOLE</h1>
-        </a>
-        
+    <!-- Top Header -->
+    <header class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 px-4 py-3 flex items-center justify-between">
+        <div class="flex flex-col">
+            <a href="{% url 'store:home' %}" class="flex items-center gap-2">
+                <h1 class="text-xl font-extrabold tracking-tight">STYLINSOLE</h1>
+            </a>
+            <!-- NEW: Mobile Greeting -->
+            {% if user.is_authenticated %}
+                <span class="md:hidden text-[11px] font-bold text-gray-500 mt-0.5">Hi, {{ user.username }} 👋</span>
+            {% endif %}
+        </div>
+
         <div class="flex items-center gap-4">
             <!-- Search Bar (Desktop) -->
-            <form action="{% url 'store:list' %}" method="GET" class="hidden md:block relative">
-                <input type="text" name="q" placeholder="Search shoes, brands..." value="{{ request.GET.q }}" class="bg-gray-100 text-sm rounded-full pl-10 pr-4 py-2 w-64 outline-none focus:ring-2 focus:ring-wine/30 transition-all">
-                <button type="submit" class="absolute left-4 top-2.5 text-gray-400 hover:text-wine transition-colors">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                </button>
-            </form>
+            <div class="hidden md:block relative">
+                <input type="text" placeholder="Search shoes, brands..." class="bg-gray-100 text-sm rounded-full pl-10 pr-4 py-2 w-64 outline-none focus:ring-2 focus:ring-gray-200">
+                <svg class="w-4 h-4 absolute left-4 top-2.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </div>
             
-            <!-- Auth Links (Desktop Only - Mobile uses bottom nav) -->
-            <div class="hidden md:flex items-center gap-4 text-sm font-bold text-gray-600 mr-2">
+            <!-- Desktop Auth / Account -->
+            <div class="hidden md:flex items-center gap-4 border-r border-gray-200 pr-4">
                 {% if user.is_authenticated %}
-                    <span class="text-gray-900">Hi, {{ user.username }}</span>
-                    <a href="{% url 'accounts:logout' %}" class="hover:text-wine transition-colors">Logout</a>
+                    <span class="text-sm font-bold text-gray-900">Hi, {{ user.username }}</span>
+                    <button hx-get="{% url 'accounts:drawer' %}" hx-target="#account-drawer" hx-swap="innerHTML" onclick="toggleAccountDrawer(true)" class="text-sm font-bold text-gray-500 hover:text-wine transition">Account</button>
                 {% else %}
-                    <a href="{% url 'accounts:login' %}" class="hover:text-wine transition-colors">Log In</a>
-                    <a href="{% url 'accounts:register' %}" class="px-4 py-2 bg-wine text-white rounded-lg hover:bg-[#5a252b] transition-colors">Sign Up</a>
+                    <a href="{% url 'accounts:login' %}" class="text-sm font-bold text-gray-900 hover:text-wine transition">Log In</a>
+                    <a href="{% url 'accounts:register' %}" class="text-sm font-bold text-white bg-wine px-4 py-1.5 rounded-full hover:bg-[#5a252b] transition shadow-sm">Sign Up</a>
                 {% endif %}
             </div>
 
-            <!-- Desktop Wishlist Icon (Hidden on mobile) -->
-            <a href="{% url 'store:wishlist' %}" class="hidden md:block relative p-1 text-gray-900 hover:text-wine transition-colors" title="My Wishlist">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
-            </a>
-
-            <!-- HTMX Cart Trigger -->
-            <button onclick="toggleCartDrawer(true)" class="relative p-1 text-gray-900 hover:text-wine transition-colors group">
+            <!-- Cart Icon -->
+            <a href="#" hx-get="{% url 'cart:drawer' %}" hx-target="#cart-drawer" hx-swap="innerHTML" onclick="toggleCartDrawer(true)" class="relative text-gray-900 hover:text-wine transition">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                <span id="cart-badge" 
-                      hx-get="{% url 'cart:badge' %}" 
-                      hx-trigger="cartUpdated from:body" 
-                      hx-swap="outerHTML"
-                      class="absolute top-0 right-0 inline-flex items-center justify-center w-4 h-4 text-[10px] font-bold text-white bg-wine rounded-full transform translate-x-1/4 -translate-y-1/4 group-hover:scale-110 transition-transform">
-                    {{ cart|length }}
-                </span>
-            </button>
+            </a>
         </div>
     </header>
 

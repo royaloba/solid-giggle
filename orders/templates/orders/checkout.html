@@ -14,11 +14,14 @@
                 <form method="POST" action="{% url 'orders:checkout' %}" class="space-y-4 pt-2">
                     {% csrf_token %}
 
-                    {% if messages %}
+                   {% if messages %}
                         {% for message in messages %}
-                            <div class="p-3 bg-red-50 border border-red-200 text-red-700 rounded-md text-sm font-medium">
-                                {{ message }}
-                            </div>
+                            <!-- Only show error messages on checkout, ignore auth success messages -->
+                            {% if 'error' in message.tags or 'warning' in message.tags %}
+                                <div class="p-3 bg-red-50 border border-red-200 text-red-700 rounded-md text-sm font-medium mb-4">
+                                    {{ message }}
+                                </div>
+                            {% endif %}
                         {% endfor %}
                     {% endif %}
 

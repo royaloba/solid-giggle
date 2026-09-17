@@ -1,4 +1,4 @@
-<div class="relative bg-white rounded-xl border border-gray-100 p-3 shadow-sm hover:shadow-md hover:border-wine/30 transition-all duration-300 group">
+<div id="product-card-{{ product.id }}" class="relative bg-white rounded-xl border border-gray-100 p-3 shadow-sm hover:shadow-md hover:border-wine/30 transition-all duration-300 group">
     <!-- Badges & Wishlist -->
     <div class="absolute top-5 left-5 z-10 flex gap-2">
         {% if product.discount_price %}
@@ -7,9 +7,13 @@
             <span class="bg-black text-white text-[10px] font-bold px-2 py-1 rounded-sm shadow-sm">NEW</span>
         {% endif %}
     </div>
-    <!-- Wishlist Heart Form/Button -->
+
+    <!-- Wishlist Heart Form (NOW POWERED BY HTMX) -->
     {% if user.is_authenticated %}
-        <form action="{% url 'store:toggle_wishlist' product.id %}" method="POST" class="absolute top-5 right-5 z-10">
+        <form hx-post="{% url 'store:toggle_wishlist' product.id %}" 
+              hx-target="#product-card-{{ product.id }}" 
+              hx-swap="outerHTML" 
+              class="absolute top-5 right-5 z-10">
             {% csrf_token %}
             <button type="submit" class="text-gray-300 hover:text-wine hover:scale-110 transition-all duration-300">
                 <svg class="w-5 h-5 {% if product.id in user_wishlist %}text-wine fill-wine{% endif %}" fill="none" stroke="currentColor" viewBox="0 0 24 24">

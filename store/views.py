@@ -110,8 +110,11 @@ def toggle_wishlist(request, product_id):
     wishlist_item, created = Wishlist.objects.get_or_create(user=request.user, product=product)
     
     if not created:
-        # If it already exists, clicking the heart removes it (toggle behavior)
-        wishlist_item.delete()
+        user_wishlist = request.user.wishlist.values_list('id', flat=True) 
+        return render(request, 'store/partials/product_card.html', {
+            'product': product,
+            'user_wishlist': user_wishlist
+        })
         
     # Redirect back to wherever the user clicked it from
     return redirect(request.META.get('HTTP_REFERER', 'store:home'))
