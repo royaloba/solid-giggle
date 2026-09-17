@@ -87,40 +87,18 @@
                 {% endif %}
             </div>
 
-            {% if user.is_authenticated %}
-            <button hx-get="{% url 'store:toggle_wishlist' product.id %}" hx-target="this" hx-swap="outerHTML"
-                class="absolute top-5 right-5 z-10 hover:scale-110 transition-all duration-300 focus:outline-none">
-
-                <!-- FIXED: Uses the boolean from HTMX OR the ID list from page load -->
-                {% if in_wishlist or product.id in user_wishlist %}
-                <!-- Solid Wine Heart -->
-                <svg class="w-5 h-5 text-wine drop-shadow-sm" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd"
-                        d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
-                        clip-rule="evenodd"></path>
-                </svg>
+            <!-- Desktop Wishlist Icon -->
+            <a href="{% url 'store:wishlist' %}" class="hidden md:block relative p-1 text-gray-900 hover:text-wine transition-colors mr-2" title="My Wishlist">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                
+                {% if user.is_authenticated %}
+                <span id="wishlist-badge-desktop" class="absolute top-0 right-0 inline-flex items-center justify-center w-4 h-4 text-[10px] font-bold text-white bg-wine rounded-full transform translate-x-1/4 -translate-y-1/4">
+                    {{ user_wishlist|length|default:"0" }}
+                </span>
                 {% else %}
-                <!-- Outline Heart -->
-                <svg class="w-5 h-5 text-gray-300 hover:text-wine transition-colors" fill="none" stroke="currentColor"
-                    viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
-                    </path>
-                </svg>
+                <span id="wishlist-badge-desktop" class="hidden"></span>
                 {% endif %}
-            </button>
-            {% else %}
-            <a href="{% url 'accounts:login' %}"
-                class="absolute top-5 right-5 z-10 text-gray-300 hover:text-wine transition-colors"
-                title="Login to save to wishlist">
-                <!-- Outline Heart (Guest User) -->
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
-                    </path>
-                </svg>
             </a>
-            {% endif %}
 
             <!-- HTMX OUT-OF-BAND SWAPS (Updates both navbars instantly) -->
             {% if request.headers.get|default:'' == 'HX-Request' %}
