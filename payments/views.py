@@ -147,17 +147,5 @@ def paystack_webhook_view(request: HttpRequest):
 
 
 def _fulfill_order(order: Order):
-    """
-    Hook for inventory deduction and alerts.
-    This runs safely inside the webhook's atomic transaction.
-    """
     logger.info(f"Successfully fulfilled Order {order.reference} for {order.email}")
     
-    for item in order.items.all():
-        if item.variant:
-            if item.variant.stock >= item.quantity:
-                item.variant.stock -= item.quantity
-            else:
-                item.variant.stock = 0 
-            
-            item.variant.save(update_fields=['stock'])
