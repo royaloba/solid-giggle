@@ -14,15 +14,21 @@
                 <form method="POST" action="{% url 'orders:checkout' %}" class="space-y-4 pt-2">
                     {% csrf_token %}
 
-                   {% if messages %}
-                        {% for message in messages %}
-                            <!-- Only show error messages on checkout, ignore auth success messages -->
-                            {% if 'error' in message.tags or 'warning' in message.tags %}
-                                <div class="p-3 bg-red-50 border border-red-200 text-red-700 rounded-md text-sm font-medium mb-4">
-                                    {{ message }}
-                                </div>
-                            {% endif %}
-                        {% endfor %}
+                    <!-- FIXED: Smart Message Filtering -->
+                    {% if messages %}
+                        <div class="mb-6 space-y-2">
+                            {% for message in messages %}
+                                <!-- Hunt for auth messages and hide them, but allow actual checkout success/errors -->
+                                {% if 'logged in' not in message.message|lower and 'signed in' not in message.message|lower %}
+                                    <div class="p-3 rounded-md text-sm font-medium border
+                                        {% if message.tags == 'error' %}bg-red-50 border-red-200 text-red-700
+                                        {% elif message.tags == 'success' %}bg-green-50 border-green-200 text-green-700
+                                        {% else %}bg-blue-50 border-blue-200 text-blue-700{% endif %}">
+                                        {{ message }}
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
                     {% endif %}
 
                     <div class="grid grid-cols-2 gap-4">
