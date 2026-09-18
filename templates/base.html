@@ -9,14 +9,7 @@
     <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
 
-    <script>
-        document.body.addEventListener('htmx:configRequest', (event) => {
-            const match = document.cookie.match(/csrftoken=([^;]+)/);
-            if (match) {
-                event.detail.headers['X-CSRFToken'] = match[1];
-            }
-        });
-    </script>
+    
 
     <!-- TAILWIND CUSTOM CONFIGURATION -->
     <script>
@@ -52,6 +45,16 @@
 </head>
 
 <body class="bg-gray-50 text-gray-900 font-sans flex flex-col min-h-screen pb-20 md:pb-0">
+    <!-- NEW: Force Django to generate the token, then attach it to all HTMX requests -->
+    <div class="hidden">{% csrf_token %}</div>
+    <script>
+        document.body.addEventListener('htmx:configRequest', (event) => {
+            const csrfInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
+            if (csrfInput) {
+                event.detail.headers['X-CSRFToken'] = csrfInput.value;
+            }
+        });
+    </script>
 
     <!-- Top Header -->
     <header
