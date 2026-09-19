@@ -47,4 +47,14 @@
         </div>
     </div>
 </div>
+
+<!-- META PIXEL: Purchase Event (Fires only on successful payment) -->
+<script>
+    fbq('track', 'Purchase', {
+        value: Number('{{ order.total_amount }}'), 
+        currency: 'NGN',
+        content_name: 'Order {{ order.reference|escapejs }}'
+    });
+</script>
+
 {% endblock %}
