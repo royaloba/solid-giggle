@@ -94,7 +94,10 @@ DATABASES = {
 }
 
 try:
-    import dj_database_url
+    # Load this optional dependency dynamically so local environments without
+    # dj-database-url can continue using SQLite.
+    from importlib import import_module
+    dj_database_url = import_module('dj_database_url')
     DATABASE_URL = os.environ.get('DATABASE_URL')
     if DATABASE_URL:
         DATABASES['default'] = dj_database_url.config(
@@ -226,3 +229,8 @@ STORAGES = {
 
 
 MEDIA_URL = '/media/'
+
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+CSRF_TRUSTED_ORIGINS = ['https://stylinsole.onrender.com']
+SESSION_COOKIE_SECURE = True
