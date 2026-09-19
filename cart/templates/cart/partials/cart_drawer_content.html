@@ -60,13 +60,23 @@
     </div>
 
     <!-- Footer Summary & Checkout -->
+    <!-- Footer Summary & Checkout -->
     {% if cart %}
     <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
-        <div class="flex justify-between text-base font-bold text-gray-900 mb-3">
-            <span>Subtotal</span>
-            <span class="text-wine">₦{{ cart.get_total_price|floatformat:2 }}</span>
+        <div class="space-y-2 mb-4">
+            <div class="flex justify-between text-sm text-gray-600">
+                <span>Subtotal</span>
+                <span>₦{{ cart.get_total_price|floatformat:2 }}</span>
+            </div>
+            <div class="flex justify-between text-sm text-gray-600">
+                <span>Shipping</span>
+                <span>₦{{ cart.get_shipping_fee|floatformat:2 }}</span>
+            </div>
+            <div class="flex justify-between text-lg font-bold text-gray-900 pt-2 border-t border-gray-200 mt-2">
+                <span>Total</span>
+                <span class="text-wine">₦{{ cart.get_grand_total|floatformat:2 }}</span>
+            </div>
         </div>
-        <p class="text-xs text-gray-500 mb-4">Shipping and discounts calculated at checkout.</p>
 
         {% if request.user.is_authenticated %}
         <a href="{% url 'orders:checkout' %}"

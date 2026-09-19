@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
     'cloudinary_storage',
     'cloudinary',
     'payments',
@@ -58,6 +59,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'config.middleware.StealthAdminMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -157,6 +159,26 @@ PAYSTACK_CALLBACK_URL = os.environ.get("PAYSTACK_CALLBACK_URL", "http://127.0.0.
 
 # settings.py
 
+JAZZMIN_SETTINGS = {
+    # Title on the login screen
+    "site_title": "Stylinsole Admin",
+    
+    # Title on the brand/header
+    "site_header": "Stylinsole",
+    "site_brand": "Stylinsole",
+    
+    # --- THIS ADDS YOUR CUSTOM BUTTONS TO THE TOP NAV ---
+    "topmenu_links": [
+        {"name": "Home",  "url": "admin:index", "permissions": ["auth.view_user"]},
+        
+        # Link directly to your custom HTML dashboard
+        {"name": "Site Dashboard", "url": "/dashboard/", "icon": "fas fa-chart-line"},
+        
+        # Link back to the public storefront
+        {"name": "View Live Store", "url": "/", "icon": "fas fa-eye"}
+    ],
+}
+
 JAZZMIN_UI_TWEAKS = {
     "theme": "default",
     "dark_mode_theme": "darkly",
@@ -183,6 +205,7 @@ JAZZMIN_UI_TWEAKS = {
         "danger": "btn-danger",
         "success": "btn-success"
     }
+
 }
 
 CLOUDINARY_STORAGE = {

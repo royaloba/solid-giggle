@@ -98,11 +98,11 @@
                     </div>
                     <div class="flex justify-between text-sm text-gray-600 font-medium">
                         <span>Shipping</span>
-                        <span class="italic">Calculated next</span>
+                        <span>₦{{ cart.get_shipping_fee | floatformat:2 }}</span>
                     </div>
                     <div class="flex justify-between text-xl font-black text-gray-900 pt-3 border-t border-gray-200 mt-2">
                         <span>Total</span>
-                        <span class="text-wine">₦{{ cart.get_total_price | floatformat:2 }}</span>
+                        <span class="text-wine">₦{{ cart.get_grand_total | floatformat:2 }}</span>
                     </div>
                 </div>
             </div>

@@ -77,3 +77,11 @@ class Cart:
     def get_total_price(self) -> Decimal:
         """Calculate total price of all items in cart."""
         return sum(Decimal(item['price']) * item['quantity'] for item in self.cart.values())
+
+    def get_shipping_fee(self):
+        # Only apply the 5000 fee if there is actually something in the cart
+        return 5000 if len(self) > 0 else 0
+
+    def get_grand_total(self):
+        # Subtotal + Shipping
+        return self.get_total_price() + self.get_shipping_fee()

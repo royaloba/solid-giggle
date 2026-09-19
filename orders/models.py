@@ -42,6 +42,13 @@ class Order(models.Model):
     def amount_in_kobo(self) -> int:
         return int(self.total_amount * 100)
 
+    shipping_fee = models.DecimalField(max_digits=10, decimal_places=2, default=5000.00)
+    
+    @property
+    def subtotal(self):
+        # Calculates the item subtotal without needing a template tag
+        return self.total_amount - self.shipping_fee
+
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
     variant = models.ForeignKey('store.ProductVariant', on_delete=models.SET_NULL, null=True, blank=True, related_name='order_items')

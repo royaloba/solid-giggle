@@ -13,10 +13,27 @@
         <h1 class="text-4xl font-extrabold text-gray-900 mb-2 tracking-tight">Payment Successful!</h1>
         <p class="text-gray-500 mb-8 text-lg">Thank you for shopping with Stylinsole. Your order is being processed.</p>
         
-        <!-- Highlighted Order Reference -->
+        <!-- Highlighted Order Reference & Breakdown -->
         <div class="bg-gray-50 p-6 rounded-xl mb-8 text-left border-l-4 border-wine shadow-sm">
-            <p class="text-sm text-gray-500 font-bold uppercase mb-1 tracking-wider">Order Reference</p>
-            <p class="text-2xl font-black text-wine">{{ order.reference }}</p>
+            <div class="mb-4 pb-4 border-b border-gray-200">
+                <p class="text-sm text-gray-500 font-bold uppercase mb-1 tracking-wider">Order Reference</p>
+                <p class="text-2xl font-black text-wine">{{ order.reference }}</p>
+            </div>
+            
+            <div class="space-y-2">
+                <div class="flex justify-between items-center text-sm text-gray-600 font-medium">
+                    <span>Subtotal</span>
+                    <span>₦{{ order.subtotal|floatformat:2 }}</span>
+                </div>
+                <div class="flex justify-between items-center text-sm text-gray-600 font-medium">
+                    <span>Shipping</span>
+                    <span>₦{{ order.shipping_fee|floatformat:2 }}</span>
+                </div>
+                <div class="flex justify-between items-center pt-3 mt-1 border-t border-gray-200">
+                    <span class="font-bold text-gray-900">Total Paid</span>
+                    <span class="text-lg font-black text-wine">₦{{ order.total_amount|floatformat:2 }}</span>
+                </div>
+            </div>
         </div>
 
         <!-- Call to Action Buttons -->

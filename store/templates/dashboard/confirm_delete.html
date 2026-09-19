@@ -1,0 +1,24 @@
+{% extends 'dashboard/base.html' %}
+
+{% block content %}
+<div class="p-8 h-full flex items-center justify-center bg-[#F8FAFC]">
+    <div class="max-w-md w-full bg-white p-8 rounded-2xl shadow-sm border border-gray-100 text-center">
+        <div class="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+        </div>
+        
+        <h2 class="text-2xl font-black text-gray-900 mb-2">Delete Product?</h2>
+        <p class="text-gray-500 mb-8">Are you sure you want to delete <strong>{{ product.name }}</strong>? This action cannot be undone and will remove the item from the storefront immediately.</p>
+        
+        <form method="POST" class="flex gap-4">
+            {% csrf_token %}
+            <a href="{% url 'store:dashboard' %}" class="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-all">
+                Cancel
+            </a>
+            <button type="submit" class="flex-1 py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 shadow-md transition-all">
+                Yes, Delete
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

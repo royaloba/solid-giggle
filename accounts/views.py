@@ -31,15 +31,24 @@ def login_view(request):
         if form.is_valid():
             user = form.get_user()
             login(request, user)
-            messages.success(request, f"Welcome back, {user.username}!")
             
-            # If they were trying to checkout before logging in, send them back there
-            next_url = request.GET.get('next', 'store:home')
-            return redirect(next_url)
+            # --- TIER 1: TECHNICAL ADMIN / SITE OWNER ---
+            if user.is_superuser:
+                return redirect('admin:index')
+                
+            # --- TIER 2: STORE MANAGER / NON-TECHNICAL STAFF ---
+            elif user.is_staff:
+                # Routes them to the custom dashboard we built
+                return redirect('store:dashboard') 
+            
+            # --- TIER 3: REGULAR CUSTOMERS ---
+            else:
+                messages.success(request, f"Welcome back, {user.username}!")
+                next_url = request.GET.get('next', 'store:home')
+                return redirect(next_url)
     else:
         form = AuthenticationForm()
         
-    # Apply Tailwind classes to login form dynamically
     for field in form.fields.values():
         field.widget.attrs['class'] = 'w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-black outline-none transition'
 

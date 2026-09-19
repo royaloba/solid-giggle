@@ -1,0 +1,83 @@
+{% extends 'dashboard/base.html' %}
+
+{% block content %}
+<div class="p-8 flex-1 overflow-y-auto bg-[#F8FAFC]">
+    
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+        <div>
+            <h2 class="text-2xl font-black text-gray-900 tracking-tight">Products</h2>
+            <p class="text-gray-500 mt-1">Manage your store products. Add, edit or remove products.</p>
+        </div>
+        <a href="{% url 'store:dashboard_add_product' %}" class="px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-lg shadow-sm hover:bg-blue-700 transition-colors flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            Add Product
+        </a>
+    </div>
+
+    <!-- Products Table -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
+                        <th class="p-4 font-bold border-b border-gray-100">Image</th>
+                        <th class="p-4 font-bold border-b border-gray-100">Name</th>
+                        <th class="p-4 font-bold border-b border-gray-100">Brand</th>
+                        <th class="p-4 font-bold border-b border-gray-100">Category</th>
+                        <th class="p-4 font-bold border-b border-gray-100">Price</th>
+                        <th class="p-4 font-bold border-b border-gray-100">Status</th>
+                        <th class="p-4 font-bold border-b border-gray-100 text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="text-sm">
+                    {% for product in products %}
+                    <tr class="hover:bg-gray-50 transition-colors border-b border-gray-50">
+                        <td class="p-4">
+                            <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+                                {% if product.primary_image %}
+                                    <img src="{{ product.primary_image.image.url }}" alt="{{ product.name }}" class="object-cover w-full h-full mix-blend-multiply">
+                                {% else %}
+                                    <span class="text-lg">👟</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="p-4 font-bold text-gray-900">{{ product.name }}</td>
+                        <td class="p-4 text-gray-600">{{ product.brand.name }}</td>
+                        <td class="p-4 text-gray-600">{{ product.category.name }}</td>
+                        <td class="p-4 font-bold text-gray-900">₦{{ product.display_price }}</td>
+                        <td class="p-4">
+                            {% if product.is_in_stock %}
+                                <span class="bg-green-100 text-green-700 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 w-max">
+                                    <div class="w-1.5 h-1.5 bg-green-500 rounded-full"></div> In Stock
+                                </span>
+                            {% else %}
+                                <span class="bg-gray-100 text-gray-500 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 w-max">
+                                    <div class="w-1.5 h-1.5 bg-gray-400 rounded-full"></div> Out of Stock
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="p-4 text-center">
+                            <div class="flex items-center justify-center gap-2">
+                                <!-- EDIT BUTTON -->
+                                <a href="{% url 'store:dashboard_edit_product' product.slug %}" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Edit">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                </a>
+                                <!-- DELETE BUTTON -->
+                                <a href="{% url 'store:dashboard_delete_product' product.slug %}" class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="p-8 text-center text-gray-500">No products found. Start by adding one!</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

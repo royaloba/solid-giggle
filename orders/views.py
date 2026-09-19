@@ -23,7 +23,9 @@ def checkout_view(request):
                     if request.user.is_authenticated:
                         order.user = request.user
                     
-                    order.total_amount = cart.get_total_price()
+                    order.total_amount = cart.get_grand_total()
+                    order.shipping_fee = cart.get_shipping_fee()
+
                     order.save() # Shipping details are now saved securely!
 
                     for item in cart:

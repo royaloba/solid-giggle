@@ -1,0 +1,61 @@
+{% extends 'dashboard/base.html' %}
+
+{% block content %}
+<div class="p-8 flex-1 overflow-y-auto bg-[#F8FAFC]">
+    
+    <!-- Header -->
+    <div class="mb-8">
+        <h2 class="text-2xl font-black text-gray-900 tracking-tight">Orders</h2>
+        <p class="text-gray-500 mt-1">View and manage all customer orders.</p>
+    </div>
+
+    <!-- Orders Table -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
+                        <th class="p-4 font-bold border-b border-gray-100">Order #</th>
+                        <th class="p-4 font-bold border-b border-gray-100">Customer</th>
+                        <th class="p-4 font-bold border-b border-gray-100">Date</th>
+                        <th class="p-4 font-bold border-b border-gray-100">Status</th>
+                        <th class="p-4 font-bold border-b border-gray-100">Total</th>
+                        <th class="p-4 font-bold border-b border-gray-100 text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="text-sm">
+                    {% for order in orders %}
+                    <tr class="hover:bg-gray-50 transition-colors border-b border-gray-50">
+                        <td class="p-4 font-medium text-gray-900">#{{ order.reference }}</td>
+                        <td class="p-4 text-gray-600">
+                            {{ order.first_name }} {{ order.last_name }}<br>
+                            <span class="text-xs text-gray-400">{{ order.email }}</span>
+                        </td>
+                        <td class="p-4 text-gray-500">{{ order.created_at|date:"d M Y, H:i" }}</td>
+                        <td class="p-4">
+                            {% if order.status == 'SUCCESS' %}
+                                <span class="bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider">Paid</span>
+                            {% elif order.status == 'FAILED' %}
+                                <span class="bg-red-100 text-red-700 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider">Failed</span>
+                            {% else %}
+                                <span class="bg-yellow-100 text-yellow-700 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td class="p-4 font-bold text-gray-900">₦{{ order.total_amount }}</td>
+                        <td class="p-4 text-center">
+                            <a href="{% url 'store:dashboard_order_detail' order.id %}" class="text-blue-600 hover:text-blue-800 text-sm font-bold hover:underline">
+                                View Details
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="p-8 text-center text-gray-500">No orders placed yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
