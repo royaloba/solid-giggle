@@ -10,6 +10,7 @@ from django.http import HttpResponse
 import csv
 from orders.models import Order 
 from cart.cart import Cart 
+from .forms import CustomUserCreationForm, CustomAuthenticationForm
 
 
 def register_view(request):
@@ -27,7 +28,8 @@ def register_view(request):
 
 def login_view(request):
     if request.method == 'POST':
-        form = AuthenticationForm(data=request.POST)
+        # Note: Authentication forms take `request` as the first argument
+        form = CustomAuthenticationForm(request, data=request.POST)
         if form.is_valid():
             user = form.get_user()
             login(request, user)
@@ -38,7 +40,6 @@ def login_view(request):
                 
             # --- TIER 2: STORE MANAGER / NON-TECHNICAL STAFF ---
             elif user.is_staff:
-                # Routes them to the custom dashboard we built
                 return redirect('store:dashboard') 
             
             # --- TIER 3: REGULAR CUSTOMERS ---
@@ -47,11 +48,8 @@ def login_view(request):
                 next_url = request.GET.get('next', 'store:home')
                 return redirect(next_url)
     else:
-        form = AuthenticationForm()
+        form = CustomAuthenticationForm()
         
-    for field in form.fields.values():
-        field.widget.attrs['class'] = 'w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-black outline-none transition'
-
     return render(request, 'accounts/login.html', {'form': form})
 
 def logout_view(request):

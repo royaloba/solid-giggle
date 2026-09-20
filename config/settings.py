@@ -36,6 +36,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
+    'django.contrib.sites',  # Required by allauth
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
     'cloudinary_storage',
     'cloudinary',
     'payments',
@@ -44,6 +49,8 @@ INSTALLED_APPS = [
     'orders',
     'store',
 ]
+
+SITE_ID = 1
 
 AUTH_USER_MODEL = 'accounts.CustomUser'  # Use the custom user model
 
@@ -57,6 +64,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'config.middleware.StealthAdminMiddleware',
@@ -234,3 +242,44 @@ MEDIA_URL = '/media/'
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 CSRF_TRUSTED_ORIGINS = ['https://stylinsole.onrender.com']
 SESSION_COOKIE_SECURE = True
+
+# Email Configuration (Password Reset & Transactional Notifications)
+EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() in ('true', '1', 't')
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'Stylinsole <noreply@stylinsole.com>')
+
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend', # Your existing standard login
+    'allauth.account.auth_backends.AuthenticationBackend', # The new Google login
+)
+
+# 4. Allauth Configuration (Updated Syntax)
+ACCOUNT_LOGIN_METHODS = {'email', 'username'}  # Allow login with either email or username
+ACCOUNT_UNIQUE_EMAIL = True  # Ensure email addresses are unique
+# The asterisk (*) tells allauth that the field is strictly required
+ACCOUNT_SIGNUP_FIELDS = ['username', 'email*', 'password1*', 'password2*'] 
+ACCOUNT_EMAIL_VERIFICATION = 'none' 
+LOGIN_REDIRECT_URL = '/'
+
+# Google OAuth Configuration
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'APP': {
+            'client_id': os.environ.get('GOOGLE_CLIENT_ID', ''),
+            'secret': os.environ.get('GOOGLE_CLIENT_SECRET', ''),
+            'key': ''
+        },
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        },
+        'OAUTH_PKCE_ENABLED': True,
+    }
+}
